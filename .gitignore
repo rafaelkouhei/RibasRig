@@ -1,0 +1,29 @@
+# Sistema operacional e editores
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Node (front-end e aplicativo)
+node_modules/
+dist/
+*.tsbuildinfo
+*.local
+
+# Python (back-end)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Senhas e configuração local (o modelo .env.example vai para o repositório)
+.env
+.env.*
+!.env.example
+
+# Gerados pelo aplicativo: front-end copiado para dentro dele e instaladores
+ribasrig-desktop/app/
+ribasrig-desktop/release/
+
+# Arquivos enviados ao servidor quando ele roda fora do Docker
+ribasrig-backend/dados/

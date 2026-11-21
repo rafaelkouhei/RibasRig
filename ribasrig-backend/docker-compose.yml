@@ -1,0 +1,51 @@
+# Sobe o PostgreSQL e a API do RibasRig no computador da empresa.
+#   cp .env.example .env   (e preencha)
+#   docker compose up -d --build
+#   docker compose exec api python manage.py carregar_exemplo   (cenário de demonstração, opcional)
+# A API fica em http://localhost:8000/api/ (só na própria máquina).
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ribasrig}
+      POSTGRES_USER: ${POSTGRES_USER:-ribasrig}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+    volumes:
+      - banco:/var/lib/postgresql/data
+    # Só para desenvolvimento/testes locais (pytest fora do Docker). Ligado só em 127.0.0.1.
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-ribasrig}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-ribasrig}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Defina DJANGO_SECRET_KEY no .env}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-0}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      RIBASRIG_HOJE: ${RIBASRIG_HOJE:-}
+      RIBASRIG_SENHA_TESTE: ${RIBASRIG_SENHA_TESTE:-}
+      # Opcionais (o padrão está no settings.py): ver a tabela de variáveis em docs/backend.md (na raiz)
+      RIBASRIG_LIMITE_LOGIN: ${RIBASRIG_LIMITE_LOGIN:-10/min}
+      RIBASRIG_PROXIES: ${RIBASRIG_PROXIES:-0}
+      RIBASRIG_TAMANHO_MAX_PDF_MB: ${RIBASRIG_TAMANHO_MAX_PDF_MB:-25}
+      RIBASRIG_SENHA_PROVISORIA_HORAS: ${RIBASRIG_SENHA_PROVISORIA_HORAS:-48}
+      RIBASRIG_LOG: ${RIBASRIG_LOG:-INFO}
+    volumes:
+      - arquivos:/dados/arquivos
+    ports:
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  banco:
+  arquivos:

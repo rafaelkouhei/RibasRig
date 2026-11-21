@@ -1,0 +1,34 @@
+name: Aplicativo
+# Roda quando muda o aplicativo ou o front que ele empacota: testes de caminho e protocolo e o build do front em modo http.
+on:
+  push:
+    branches: [main]
+    paths: ['ribasrig-desktop/**', 'ribasrig-frontend/**', '.github/workflows/desktop.yml']
+  pull_request:
+    paths: ['ribasrig-desktop/**', 'ribasrig-frontend/**', '.github/workflows/desktop.yml']
+permissions:
+  contents: read
+env:
+  # Os testes rodam no Node; o binário do Electron (e o instalador) não são necessários aqui
+  ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            ribasrig-frontend/package-lock.json
+            ribasrig-desktop/package-lock.json
+      - run: npm ci
+        working-directory: ribasrig-frontend
+      - run: npm ci
+        working-directory: ribasrig-desktop
+      - run: npm test
+        working-directory: ribasrig-desktop
+      # O pacote do aplicativo leva o front em modo http, sem o mock
+      - run: npm run build:front
+        working-directory: ribasrig-desktop

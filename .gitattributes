@@ -1,0 +1,11 @@
+# Quebra de linha igual em Windows, Linux e Mac (o time usa sistemas diferentes)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.icns binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.xlsx binary
