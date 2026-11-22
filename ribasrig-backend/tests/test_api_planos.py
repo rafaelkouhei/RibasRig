@@ -134,6 +134,10 @@ class TestEmissao:
         admin.put('/api/configuracoes/', {**cfg, 'limite_pct': 70, 'aviso_atencao_pct': 55}, format='json')
         assert admin.post(f'/api/planos/{numero}/emitir/').status_code == 200
         assert Revisao.objects.get(plano__numero=numero, numero=1).entradas['limite_pct'] == '70.00'
+        # A API devolve o limite e o aviso da emissão, para a tela julgar a revisão com eles
+        admin.put('/api/configuracoes/', cfg, format='json')
+        rev = admin.get(f'/api/planos/{numero}/').json()['revisoes'][0]
+        assert (rev['limite_pct'], rev['aviso_atencao_pct']) == (70.0, 55.0)
 
     def test_laudo_so_com_nome_nao_conta_como_anexado(self, admin):
         # O PDF do laudo some (ou o upload falhou) e o cadastro manda só o nome: o checklist não aprova

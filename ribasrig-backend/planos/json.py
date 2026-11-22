@@ -39,11 +39,22 @@ def dados_json(p: PlanoRigging) -> dict:
     }
 
 
+def _pct_gravado(entradas: dict | None, chave: str) -> float | None:
+    v = (entradas or {}).get(chave)
+    try:
+        return float(v) if v not in (None, '') else None
+    except (TypeError, ValueError):
+        return None
+
+
 def revisao_json(r: Revisao) -> dict:
     return {
         'numero': r.numero, 'emitida_em': iso_data_hora(r.emitida_em, r.emitida_em_so_data), 'emitida_por': r.emitida_por,
         'origem': r.origem, 'cadastrada_em': iso_data_hora(r.cadastrada_em), 'resultados': r.resultados,
         'arquivo_pdf': r.arquivo_pdf, 'observacao': r.observacao,
+        # Limite e aviso usados na emissão (a tela julga a revisão com eles, não com as Configurações de hoje).
+        # None = revisão sem essa cópia (cadastrada do Excel ou anterior ao limite configurável).
+        'limite_pct': _pct_gravado(r.entradas, 'limite_pct'), 'aviso_atencao_pct': _pct_gravado(r.entradas, 'aviso_atencao_pct'),
     }
 
 

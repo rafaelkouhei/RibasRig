@@ -80,7 +80,8 @@ function Conteudo({ d }: { d: PlanoCalculado }) {
             ? <SemMemorialExcel vista={vista} numero={plano.numero} />
             : <Folha d={d} vista={vista} secoes={secoesMemorial({
                 resultados: vista.resultados, guindaste: d.guindaste, tabela: d.tabela, acessorios: d.acessorios, dormente: plano.dormente,
-                balancim: calculo.balancim, avisoAtencaoPct: d.config.avisoAtencaoPct,
+                // Revisão emitida: limite e aviso gravados nela (as Configurações podem ter mudado depois)
+                balancim: calculo.balancim, avisoAtencaoPct: rev?.avisoAtencaoPct ?? d.config.avisoAtencaoPct, limitePct: rev?.limitePct ?? undefined,
               })} />}
         </Box>
         <Box component="aside" aria-label="Sobre o memorial" sx={{ width: { lg: 330 }, flexShrink: 0, bgcolor: '#FFFFFF', borderLeft: { lg: '1px solid #D5DAE3' }, borderTop: { xs: '1px solid #D5DAE3', lg: 0 } }}>

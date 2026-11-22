@@ -46,4 +46,9 @@ describe('veredito', () => {
     expect(veredito(null, 75)).toMatch(/Bloqueado/);
     expect(veredito(40.46, 75)).toBe('≤ 85% ✓');
   });
+  it('revisão emitida usa o limite gravado nela, não o das Configurações de hoje', () => {
+    // Emitida com limite 90%: 88% era "Atenção" e continua sendo, mesmo que o limite atual seja 85%
+    expect(veredito(88, 75, 90)).toBe('≤ 90% · Atenção (a partir de 75%)');
+    expect(veredito(82, 60, 80)).toBe('> 80% · Bloqueado');
+  });
 });

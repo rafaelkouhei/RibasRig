@@ -24,6 +24,8 @@ export interface DadosResumo {
   situacao: SituacaoSeguranca;
   titulo: string;
   texto: string;
+  /** Limite mostrado em "ACESSÓRIOS (LIMITE x%)": o da revisão emitida ou o das Configurações */
+  limitePct: number;
 }
 
 const cap1 = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -41,25 +43,27 @@ export function resumoDoCalculo(r: ResultadoPlano, aviso?: number): DadosResumo 
       taxa: x.taxaPct, nivel: x.nivel, problema: !!x.problema,
     })),
     esforcoKgf: r.sapatas.esforcoKgf, rmet: r.sapatas.rmet,
-    situacao: r.situacaoSeguranca, titulo: s.titulo, texto: s.texto,
+    situacao: r.situacaoSeguranca, titulo: s.titulo, texto: s.texto, limitePct: LIMITE_PCT,
   };
 }
 
 /** Resultados gravados na emissão (plano emitido não é recalculado). */
-export function resumoDaRevisao(res: ResultadosRevisao, acessorios: Acessorio[], aviso: number): DadosResumo {
-  const nivel = nivelTaxa(n(res.taxaGuindastePct), aviso);
+/** `limite`: o gravado na revisão (as Configurações podem ter mudado depois da emissão); sem ele, o atual. */
+export function resumoDaRevisao(res: ResultadosRevisao, acessorios: Acessorio[], aviso: number, limite: number = LIMITE_PCT): DadosResumo {
+  const nivel = nivelTaxa(n(res.taxaGuindastePct), aviso, limite);
   return {
     cargaKg: n(res.cargaKg), lingadaKg: n(res.lingadaKg), dispositivosKg: res.dispositivosKg, extrasKg: n(res.extrasKg), pbKg: n(res.pbKg),
     capacidade: fmtUn(res.capacidadeKg, 2, 'kg'),
     taxaGuindaste: n(res.taxaGuindastePct), nivelGuindaste: nivel,
     acessorios: res.posicoes.map((x) => {
       const a = acessorios.find((y) => y.id === x.acessorioId);
-      return { rotulo: a ? `${cap1(a.nomeCurto)} (${NOME_POSICAO[x.posicao]})` : ROTULO_POSICAO[x.posicao], taxa: n(x.taxaPct), nivel: nivelTaxa(n(x.taxaPct), aviso), problema: false };
+      return { rotulo: a ? `${cap1(a.nomeCurto)} (${NOME_POSICAO[x.posicao]})` : ROTULO_POSICAO[x.posicao], taxa: n(x.taxaPct), nivel: nivelTaxa(n(x.taxaPct), aviso, limite), problema: false };
     }),
     esforcoKgf: n(res.sapatas.esforcoKgf), rmet: n(res.sapatas.rmet),
     situacao: res.situacaoSeguranca,
-    titulo: textoSituacao({ situacaoSeguranca: res.situacaoSeguranca, motivosBloqueio: [] }, aviso).titulo,
+    titulo: textoSituacao({ situacaoSeguranca: res.situacaoSeguranca, motivosBloqueio: [] }, aviso, limite).titulo,
     texto: 'Resultados gravados na emissão. Plano emitido não é recalculado.',
+    limitePct: limite,
   };
 }
 
@@ -100,7 +104,7 @@ export function Resumo({ d }: { d: DadosResumo }) {
         <BarraTaxa taxa={d.taxaGuindaste} nivel={d.nivelGuindaste} rotulo="Taxa de utilização do guindaste" />
       </Box>
       <Box sx={{ p: '6px 16px', borderTop: '1px solid #E4E8EE' }}>
-        <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.8px', color: COR.fraco, py: 0.25 }}>ACESSÓRIOS (LIMITE {LIMITE_PCT}%)</Typography>
+        <Typography sx={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.8px', color: COR.fraco, py: 0.25 }}>ACESSÓRIOS (LIMITE {d.limitePct}%)</Typography>
         {d.acessorios.length === 0 && <Typography sx={{ fontSize: 13, color: COR.alertaTexto, fontWeight: 600, py: 0.5 }}>Bloqueado · lingada sem acessórios</Typography>}
         {d.acessorios.map((a) => (
           <Box key={a.rotulo} sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, py: 0.4, fontSize: 13 }}>

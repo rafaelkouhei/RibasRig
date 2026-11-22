@@ -9,6 +9,7 @@ import { enderecoContratante, enderecoObra } from '../../domain/art';
 import { LIMITE_PCT, capacidadeDeTrabalho } from '../../domain/calculos';
 import { casasDe, dataBR, dataHoraBR, fmt, fmtUn, HOJE, numParaTexto } from '../../domain/formatacao';
 import { partesNumero } from '../../domain/numeracao';
+import { MODO_API } from '../../services/api';
 import { POSICOES, ROTULO_POSICAO, type Etapa, type FormItemLingada } from '../../domain/plano';
 import type { PosicaoLingada } from '../../domain/types';
 import type { PropsEtapa } from './tipos';
@@ -365,10 +366,11 @@ export function EtapaRevisao({ r, irPara, podeMemorial }: Pick<PropsEtapa, 'r' |
       </Box>
       {r.motivosBloqueio.length > 0 && <Aviso titulo="Bloqueado">{cap1(r.motivosBloqueio.join('; '))}.</Aviso>}
       {r.situacaoSeguranca !== 'bloqueado' && r.checklist.every((c) => c.ok) && <Info>Tudo certo: o plano pode ser emitido. Depois de emitido ele fica somente leitura; para mudar algo, crie uma nova revisão.</Info>}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+      {/* Atalhos para o plano do cenário de exemplo: só na demonstração (num banco real o 2607036 não existe) */}
+      {MODO_API !== 'http' && <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
         <Button component={RouterLink} to="/planos/2607036" variant="outlined" sx={{ minHeight: 42, borderColor: COR.marinho }}>Ver exemplo de plano emitido (2607036)</Button>
         {podeMemorial && <Button component={RouterLink} to="/planos/2607036/memorial" variant="outlined" startIcon={<LockOutlined fontSize="small" />} sx={{ minHeight: 42, borderColor: COR.bordaCampo }}>Memorial do plano de referência (2607036)</Button>}
-      </Box>
+      </Box>}
     </Box>
   );
 }

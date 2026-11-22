@@ -60,7 +60,11 @@ export async function abrirDoPlano(blob: Blob, nome: string, destino: DestinoPla
   const ponte = desktop();
   if (!ponte) {
     const url = URL.createObjectURL(blob);
-    if (!window.open(url, '_blank', 'noopener')) baixarNoNavegador(blob, nome);
+    // Sem 'noopener' na chamada: com ele, window.open SEMPRE devolve null e o PDF também seria baixado. O opener é
+    // cortado à mão; null aqui = janela bloqueada pelo navegador, então baixa.
+    const aba = window.open(url, '_blank');
+    if (aba) aba.opener = null;
+    else baixarNoNavegador(blob, nome);
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
     return null;
   }

@@ -3,7 +3,7 @@ import { Alert, Box, Button, Dialog, DialogContent, DialogTitle, LinearProgress,
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutlineOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { api, MODO_API } from '../services/api';
 import { useCarregar } from '../hooks';
 import { BarraPlano } from '../components/Cabecalho';
 import { Dica } from '../components/Dica';
@@ -87,11 +87,19 @@ function obraDoLocal(cliente: Cliente | undefined, local: string): Pick<FormLote
   return { obraNome: '', obraEndereco: '', obraCidade: '', obraUf: '', obraCep: '' };
 }
 
-const FORM_INICIAL: FormLote = {
+/** Exemplo preenchido só na demonstração (sem servidor). Com o servidor o formulário começa vazio: o cliente de id 1
+ * e o endereço da Bosch levariam a criar 10 planos para o contratante errado. */
+const FORM_EXEMPLO: FormLote = {
   dataOperacao: '', descricao: 'Içamento de injetoras', clienteId: 1, local: '0',
   obraNome: 'Bosch', obraEndereco: 'Av. Juscelino K. de Oliveira, 11800 · Cidade Industrial', obraCidade: 'Curitiba', obraUf: 'PR', obraCep: '81460-000',
   carga: 'Injetora', peso: '3.200', comprimento: '3,8', largura: '1,6', altura: '2,1', quantidade: '10',
 };
+const FORM_VAZIO: FormLote = {
+  dataOperacao: '', descricao: '', clienteId: null, local: LOCAL_CONTRATANTE,
+  obraNome: '', obraEndereco: '', obraCidade: '', obraUf: '', obraCep: '',
+  carga: '', peso: '', comprimento: '', largura: '', altura: '', quantidade: '',
+};
+const FORM_INICIAL: FormLote = MODO_API === 'http' ? FORM_VAZIO : FORM_EXEMPLO;
 
 // =============================================================================================
 // Tela

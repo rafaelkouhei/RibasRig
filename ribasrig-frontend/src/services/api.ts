@@ -63,20 +63,25 @@ function encerrarSessao(avisar: boolean) {
   if (avisar && typeof window !== 'undefined') window.dispatchEvent(new Event(EVENTO_SESSAO_EXPIRADA));
 }
 
-let renovando: Promise<boolean> | null = null;
+/** 'recusado' = o servidor negou o refresh (sessão acabou); 'sem-conexao' = rede ou servidor fora do ar (tenta depois). */
+type Renovacao = 'ok' | 'recusado' | 'sem-conexao';
+let renovando: Promise<Renovacao> | null = null;
+const MSG_SEM_CONEXAO = 'Sem conexão com o servidor do RibasRig. Confira se ele está ligado e tente de novo.';
 /** Troca o refresh por um access novo (uma renovação por vez, mesmo com várias chamadas recebendo 401 juntas). */
-function renovarToken(): Promise<boolean> {
+function renovarToken(): Promise<Renovacao> {
   const refresh = lerRefresh();
-  if (!refresh) return Promise.resolve(false);
+  if (!refresh) return Promise.resolve('recusado');
   renovando ??= (async () => {
     try {
       const r = await fetch(`${BASE_API}/api/auth/token/refresh/`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh }) });
-      if (!r.ok) return false;
+      // Só 400/401 encerram a sessão; erro 5xx (servidor reiniciando) não apaga o refresh
+      if (r.status === 400 || r.status === 401) return 'recusado';
+      if (!r.ok) return 'sem-conexao';
       const d = (await r.json()) as { access: string; refresh?: string };
       token = d.access;
       if (d.refresh) gravarRefresh(d.refresh);
-      return true;
-    } catch { return false; } finally { renovando = null; }
+      return 'ok';
+    } catch { return 'sem-conexao'; } finally { renovando = null; }
   })();
   return renovando;
 }
@@ -97,12 +102,15 @@ async function requisitar(metodo: Metodo, url: string, corpo?: unknown, opcoes: 
         body: corpo === undefined ? undefined : corpo instanceof FormData ? corpo : JSON.stringify(paraApi(corpo)),
       });
     } catch {
-      throw new ErroApi(0, 'Sem conexão com o servidor do RibasRig. Confira se ele está ligado e tente de novo.');
+      throw new ErroApi(0, MSG_SEM_CONEXAO);
     }
   };
   let r = await enviar();
   if (r.status === 401 && renovar) {
-    if (await renovarToken()) r = await enviar();
+    const renovacao = await renovarToken();
+    // Sem conexão na renovação: a sessão continua (o refresh fica guardado) e a tela mostra o erro de conexão
+    if (renovacao === 'sem-conexao') throw new ErroApi(0, MSG_SEM_CONEXAO);
+    if (renovacao === 'ok') r = await enviar();
     if (r.status === 401) encerrarSessao(true);
   }
   return r;
@@ -593,7 +601,11 @@ const apiHttp: Api = {
     if (refresh) await http<void>('POST', '/api/auth/logout/', { refresh }, { renovar: false }).catch(() => undefined);
   },
   retomarSessao: async () => {
-    if (!lerRefresh() || !(await renovarToken())) { encerrarSessao(false); return null; }
+    if (!lerRefresh()) { encerrarSessao(false); return null; }
+    const renovacao = await renovarToken();
+    // Sem conexão: não apaga a sessão; quem chamou mantém a tela e tenta de novo depois
+    if (renovacao === 'sem-conexao') throw new ErroApi(0, MSG_SEM_CONEXAO);
+    if (renovacao === 'recusado') { encerrarSessao(false); return null; }
     return http<Usuario>('GET', '/api/auth/me/');
   },
 

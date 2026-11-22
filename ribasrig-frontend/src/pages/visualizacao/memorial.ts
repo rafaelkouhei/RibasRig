@@ -17,6 +17,8 @@ export interface EntradaMemorial {
   dormente: Dormente;
   balancim: boolean;
   avisoAtencaoPct: number;
+  /** Limite da taxa usado no veredito: o gravado na revisão; sem ele (rascunho), o das Configurações. */
+  limitePct?: number;
 }
 
 const ok = (v: number | null | undefined): v is number => typeof v === 'number' && Number.isFinite(v);
@@ -26,12 +28,12 @@ const f4 = (v: number) => fmt(v, 4);
 const graus = (v: number) => (ok(v) ? `${fmt(v, casasDe(v))}°` : '—');
 
 /** "≤ 85% ✓" · "≤ 85% · Atenção" · "> 85% · Bloqueado" · "sem resultado · Bloqueado" */
-export function veredito(taxa: number | null | undefined, aviso: number): string {
+export function veredito(taxa: number | null | undefined, aviso: number, limite: number = LIMITE_PCT): string {
   if (!ok(taxa)) return '· sem resultado · Bloqueado';
-  const nivel = nivelTaxa(taxa, aviso);
-  if (nivel === 'bloqueado') return `> ${LIMITE_PCT}% · Bloqueado`;
-  if (nivel === 'atencao') return `≤ ${LIMITE_PCT}% · Atenção (a partir de ${aviso}%)`;
-  return `≤ ${LIMITE_PCT}% ✓`;
+  const nivel = nivelTaxa(taxa, aviso, limite);
+  if (nivel === 'bloqueado') return `> ${limite}% · Bloqueado`;
+  if (nivel === 'atencao') return `≤ ${limite}% · Atenção (a partir de ${aviso}%)`;
+  return `≤ ${limite}% ✓`;
 }
 
 function secaoCargaBruta(r: ResultadosRevisao): SecaoMemorial {
@@ -81,7 +83,7 @@ function secoesGuindastes(e: EntradaMemorial): SecaoMemorial[] {
   const secoes: SecaoMemorial[] = [{
     titulo: `Capacidade de carga no raio · ${principal?.modelo ?? e.guindaste?.modelo ?? 'guindaste'}`,
     linhas,
-    resultado: `C = ${kg(capKg)} kg (${f2(capKg / 1000)} t) · TU = ${fmtPct(r.taxaGuindastePct)} ${veredito(r.taxaGuindastePct, e.avisoAtencaoPct)}`,
+    resultado: `C = ${kg(capKg)} kg (${f2(capKg / 1000)} t) · TU = ${fmtPct(r.taxaGuindastePct)} ${veredito(r.taxaGuindastePct, e.avisoAtencaoPct, e.limitePct)}`,
   }];
   for (const a of adicionais) {
     secoes.push({
@@ -91,7 +93,7 @@ function secoesGuindastes(e: EntradaMemorial): SecaoMemorial[] {
         { texto: `Parte da carga = Pb × ${fmt(a.pctCarga, casasDe(n(a.pctCarga)))}% = ${fmt(a.cargaKg, 2)} kg` },
         { texto: `Taxa de utilização = ${fmt(a.cargaKg, 2)} ÷ ${kg(a.capacidadeKg)} × 100` },
       ],
-      resultado: `C = ${kg(a.capacidadeKg)} kg · TU = ${fmtPct(a.taxaPct)} ${veredito(a.taxaPct, e.avisoAtencaoPct)}`,
+      resultado: `C = ${kg(a.capacidadeKg)} kg · TU = ${fmtPct(a.taxaPct)} ${veredito(a.taxaPct, e.avisoAtencaoPct, e.limitePct)}`,
     });
   }
   return secoes;
@@ -113,7 +115,7 @@ function secaoPosicao(p: ResultadoPosicaoRevisao, e: EntradaMemorial, angInf: nu
   const cap = n(p.capacidade);
   const u = p.unidade;
   const tu = { texto: `TU = ${f4(t)} ÷ ${f2(cap)} × 100` };
-  const ver = `${fmtPct(p.taxaPct)} ${veredito(p.taxaPct, e.avisoAtencaoPct)}`;
+  const ver = `${fmtPct(p.taxaPct)} ${veredito(p.taxaPct, e.avisoAtencaoPct, e.limitePct)}`;
   const pernas = p.posicao === 'pernasInferiores' || p.posicao === 'pernasSuperiores';
   const titulo = pernas
     ? `${p.descricao} · ${NOME_POSICAO[p.posicao]} (${geometria(p.posicao, e.balancim)})`
@@ -154,7 +156,7 @@ function secaoPosicao(p: ResultadoPosicaoRevisao, e: EntradaMemorial, angInf: nu
       return {
         titulo,
         linhas: [{ texto: `Esforço = 2 × ${deQue} = 2 × ${f4(t / 2)} = ${f4(t)} ${u}` }, tu],
-        resultado: `Manilha no gancho = 2 · ${deQue} = ${f2(t)} ${u} → ${fmtPct(p.taxaPct)} (${a?.nomeCurto ?? p.descricao}, ${fmt(cap, 1)} ${u}) ${veredito(p.taxaPct, e.avisoAtencaoPct)}`,
+        resultado: `Manilha no gancho = 2 · ${deQue} = ${f2(t)} ${u} → ${fmtPct(p.taxaPct)} (${a?.nomeCurto ?? p.descricao}, ${fmt(cap, 1)} ${u}) ${veredito(p.taxaPct, e.avisoAtencaoPct, e.limitePct)}`,
       };
     }
   }

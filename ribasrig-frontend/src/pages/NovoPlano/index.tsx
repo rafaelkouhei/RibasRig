@@ -321,7 +321,7 @@ function Formulario() {
   const rev = plano ? revisaoAtual(plano) : null;
   const clientePlano = plano ? cad.clientes.find((c) => c.id === plano.clienteId) : null;
   const caminhoPdf = plano && rev ? caminhoPlano(cad.config, clientePlano?.nomePasta ?? 'Sem cliente', plano.numero, rev.numero) : '';
-  const resumo = somenteLeitura && rev ? resumoDaRevisao(rev.resultados, cad.acessorios, cad.config.avisoAtencaoPct) : resumoDoCalculo(r, cad.config.avisoAtencaoPct);
+  const resumo = somenteLeitura && rev ? resumoDaRevisao(rev.resultados, cad.acessorios, rev.avisoAtencaoPct ?? cad.config.avisoAtencaoPct, rev.limitePct ?? undefined) : resumoDoCalculo(r, cad.config.avisoAtencaoPct);
   const titulo = (modo === 'novo' || modo === 'duplicar' || criadoAqui) && !somenteLeitura ? 'Novo Plano de Rigging' : `Plano nº ${numero ?? ''}`;
 
   const confirmar: PropsEtapa['confirmar'] = (q, ok) => setPergunta({ ...q, ok });

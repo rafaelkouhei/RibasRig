@@ -83,6 +83,25 @@ describe('api (http)', () => {
     expect(sessionStorage.getItem('ribasrig.refresh')).toBeNull();
   });
 
+  it('sem conexão ao renovar o token: mostra o erro de conexão e NÃO encerra a sessão', async () => {
+    const { api } = await logado();
+    respostas.push(() => json(401, { detail: 'Token expirado' }), () => { throw new TypeError('Failed to fetch'); });
+    await expect(api.listarClientes()).rejects.toMatchObject({ status: 0, message: expect.stringContaining('Sem conexão') });
+    expect(eventos).toEqual([]);
+    expect(sessionStorage.getItem('ribasrig.refresh')).toBe('R1');
+    // Servidor reiniciando (503) na renovação também não derruba a sessão
+    respostas.push(() => json(401, { detail: 'Token expirado' }), () => json(503, null));
+    await expect(api.listarClientes()).rejects.toMatchObject({ status: 0 });
+    expect(sessionStorage.getItem('ribasrig.refresh')).toBe('R1');
+  });
+
+  it('retomar sessão sem conexão: rejeita (a tela fica) e guarda o refresh', async () => {
+    const { api } = await logado();
+    respostas.push(() => { throw new TypeError('Failed to fetch'); });
+    await expect(api.retomarSessao()).rejects.toMatchObject({ status: 0 });
+    expect(sessionStorage.getItem('ribasrig.refresh')).toBe('R1');
+  });
+
   it('erros do servidor viram ErroApi com o detail', async () => {
     const { api, ErroApi } = await logado();
     respostas.push(() => json(422, { detail: 'Não dá para emitir: taxa acima de 85%.' }));

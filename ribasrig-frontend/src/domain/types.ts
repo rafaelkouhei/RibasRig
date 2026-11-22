@@ -405,6 +405,10 @@ export interface Revisao {
   resultados: ResultadosRevisao;
   arquivoPdf: string;
   observacao: string;
+  /** Limite da taxa (%) usado na emissão. null/ausente = revisão sem essa cópia: vale o das Configurações. */
+  limitePct?: number | null;
+  /** Aviso de atenção (%) usado na emissão. null/ausente = vale o das Configurações. */
+  avisoAtencaoPct?: number | null;
 }
 
 export interface PlanoRigging extends DadosPlano {

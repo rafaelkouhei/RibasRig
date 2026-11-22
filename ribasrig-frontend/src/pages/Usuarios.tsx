@@ -29,6 +29,7 @@ interface SenhaMostrada { titulo: string; nome: string; login: string; senha: st
 export default function Usuarios() {
   const notificar = useNotificacao();
   const { dados: usuarios, setDados, carregando, erro, recarregar } = useCarregar(api.listarUsuarios, [] as Usuario[]);
+  const principal = usuarios.find((u) => u.principal)?.usuario;
   const [novoAberto, setNovoAberto] = useState(false);
   const [confirmar, setConfirmar] = useState<Usuario | null>(null);
   const [desativar, setDesativar] = useState<Usuario | null>(null);
@@ -68,7 +69,7 @@ export default function Usuarios() {
         descricao={<>
           <p>Sistema local: o administrador cria cada usuário e entrega uma senha provisória, que o usuário troca no primeiro acesso.</p>
           <p>Esqueceu a senha? O administrador gera uma senha provisória nova.</p>
-          <p>O administrador principal (giuliano.breda) não pode ser desativado nem perder o perfil, para ninguém ficar sem acesso ao sistema.</p>
+          <p>O administrador principal{principal ? ` (${principal})` : ''} não pode ser desativado nem perder o perfil, para ninguém ficar sem acesso ao sistema.</p>
         </>}
         acao={<Button variant="contained" onClick={() => setNovoAberto(true)} sx={{ height: 46 }}>+ Novo usuário</Button>} />
 
