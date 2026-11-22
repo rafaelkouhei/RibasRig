@@ -1,4 +1,5 @@
 import re
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 from rest_framework import serializers
@@ -96,7 +97,11 @@ class ConfiguracoesView(APIView):
         if not _caminho_seguro(pasta):
             raise DadosInvalidos('Pasta raiz inválida: use um caminho completo (ex.: C:\\Guindastes Ribas\\Planos de Rigging), sem "..".')
         c = Configuracoes.objects.select_for_update().get_or_create(id=1)[0]
-        limite = c.limite_pct if d['limite_pct'] is None else d['limite_pct']
+        # O banco guarda 2 casas: confere já arredondado (75,004 e 75 viravam limite igual ao aviso) e a resposta
+        # devolve o mesmo valor gravado (configuracoes_json lê do model, não do pedido)
+        dois = Decimal('0.01')
+        limite = c.limite_pct if d['limite_pct'] is None else Decimal(d['limite_pct']).quantize(dois, ROUND_HALF_UP)
+        d['aviso_atencao_pct'] = Decimal(d['aviso_atencao_pct']).quantize(dois, ROUND_HALF_UP)
         if not (LIMITE_MIN <= limite <= LIMITE_MAX):
             raise DadosInvalidos(f'Limite da taxa de utilização: use um valor entre {LIMITE_MIN} e {LIMITE_MAX}%.')
         if not (50 <= d['aviso_atencao_pct'] < limite):
@@ -112,6 +117,7 @@ class ConfiguracoesView(APIView):
             setattr(c, f'responsavel_{k}', v.strip())
         c.limite_pct, c.aviso_atencao_pct, c.vento_padrao_ms = limite, d['aviso_atencao_pct'], d['vento_padrao_ms']
         c.save()
+        c.refresh_from_db()
         return Response(configuracoes_json(c))
 
 

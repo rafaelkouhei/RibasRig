@@ -41,7 +41,8 @@ export function paginaServidorDesligado(api: string, detalhe: string | null): st
   a { display: inline-block; margin-top: 14px; background: #3F4D6E; color: #fff; text-decoration: none; padding: 11px 18px; border-radius: 3px; font-weight: 600; }
 </style></head><body><main role="alert">
   <h1>O servidor do RibasRig está fora do ar</h1>
-  <p>Não foi possível conectar ao servidor. Confira a conexão com a internet ou fale com o responsável pelo sistema.</p>
+  <p>Não foi possível conectar ao servidor. Se ele roda neste computador, confira se o Docker Desktop está aberto;
+  se roda num servidor da empresa, confira a rede. Persistindo, fale com o responsável pelo sistema.</p>
   ${detalhe ? `<p class="aviso">${escapar(detalhe)}</p>` : ''}
   <p>O RibasRig tenta de novo sozinho a cada 5 segundos.</p>
   <p>Endereço conferido: <code>${escapar(api)}</code></p>

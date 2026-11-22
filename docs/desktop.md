@@ -26,7 +26,9 @@ Processo principal (src/main.ts)
   `script-src 'self'`; navegação para fora e janelas novas bloqueadas (links https abrem no navegador);
   permissões do navegador negadas; DevTools só fora do pacote; o front empacotado nunca tem o mock.
 - **A ponte só faz o necessário:** grava apenas `.pdf` e `.xlsx`, apenas dentro de
-  `<pasta raiz>\<cliente>\<nº>\<Relatório|Cálculo|Desenhos>`, com nomes limpos (sem `..`, sem `\ / : * ? " < > |`,
+  `<pasta raiz>\<cliente>\<nº>\<Relatório|Cálculo|Desenhos>` (nº com 7 dígitos e subpasta de uma lista fechada,
+  conferidos no processo principal). A pasta raiz é a das Configurações (vem do servidor, alterada só pelo
+  Administrador): o aplicativo confere que é um caminho absoluto sem `..`, não qual pasta é. Nomes limpos (sem `..`, sem `\ / : * ? " < > |`,
   sem nomes reservados do Windows); só abre ou mostra arquivos que o próprio aplicativo gravou; só atende pedidos
   vindos de `app://ribasrig`.
 - **Idioma fixo em pt-BR** (`--lang=pt-BR`): campos de data em dd/mm/aaaa mesmo num computador com o sistema em outro
@@ -59,7 +61,7 @@ No macOS, o `RibasRig.app` de teste abre pela primeira vez com clique direito �
 
 ## Desenvolvimento
 
-Pré-requisito: Node.js 20.19+ e o `ribasrig-frontend` clonado ao lado desta pasta, com as dependências instaladas
+Pré-requisito: Node.js 22.12+ (o Electron 44 e o `node --test` com padrão de arquivos pedem isso) e o `ribasrig-frontend` clonado ao lado desta pasta, com as dependências instaladas
 (`cd ../ribasrig-frontend && npm ci`).
 
 ```bash

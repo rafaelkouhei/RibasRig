@@ -104,7 +104,9 @@ def entradas_da_revisao(p: PlanoRigging, r: ResultadoPlano) -> dict:
     cfg = Configuracoes.atual()
     cliente = p.cliente
     g = p.guindaste
-    laudo = g.laudos.filter(atual=True).first() if g else None
+    # Mesmo laudo que o motor usou (laudo_atual): o marcado como atual; senão, o de fim mais recente
+    laudo = (g.laudos.filter(atual=True).first() or g.laudos.filter(fim__isnull=False).order_by('-fim').first()
+             or g.laudos.first()) if g else None
     return {
         'dados': dados_json(p),
         'cliente': {k: getattr(cliente, k) for k in ('id', 'razao_social', 'nome_pasta', 'cnpj', 'endereco', 'cidade', 'uf', 'cep')} if cliente else None,

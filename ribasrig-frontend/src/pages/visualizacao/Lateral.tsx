@@ -29,9 +29,9 @@ export function SeletorRevisao({ vistas, atual, escolher }: { vistas: VistaPlano
   );
 }
 
-function SituacaoRascunho({ calculo }: { calculo: ResultadoPlano }) {
+function SituacaoRascunho({ calculo, aviso }: { calculo: ResultadoPlano; aviso: number }) {
   const s = calculo.situacaoSeguranca;
-  const t = textoSituacao(calculo);
+  const t = textoSituacao(calculo, aviso);
   const cor = s === 'ok' ? { bgcolor: '#EEF1F6', color: '#34446A', borderLeft: '4px solid #4A6192' } : { bgcolor: '#FBE1C6', color: '#8A3F04', borderLeft: '4px solid #C2610C' };
   return (
     <Box sx={{ ...cor, p: '10px 12px', borderRadius: '3px', fontSize: 13, lineHeight: 1.45 }} role="status">
@@ -48,10 +48,12 @@ export interface PropsLateral {
   vistas: VistaPlano[];
   vista: VistaPlano;
   escolher: (id: IdVista) => void;
+  /** Aviso de atenção das Configurações (o texto "abaixo de x%" do rascunho) */
+  avisoAtencaoPct: number;
 }
 
 /** Coluna direita: revisão exibida, ações do plano e resumo de revisões e histórico. */
-export function Lateral({ plano, calculo, vistas, vista, escolher }: PropsLateral) {
+export function Lateral({ plano, calculo, vistas, vista, escolher, avisoAtencaoPct }: PropsLateral) {
   const { usuario } = useAuth();
   const navegar = useNavigate();
   const perfil = usuario?.perfil;
@@ -64,7 +66,7 @@ export function Lateral({ plano, calculo, vistas, vista, escolher }: PropsLatera
           <Typography component="h2" sx={{ fontSize: 14, fontWeight: 700, color: 'primary.main' }}>{emitido ? 'Revisão exibida' : 'Situação do rascunho'}</Typography>
           {emitido && <Dica tamanho={16}>Plano bloqueado para edição. Para qualquer mudança, crie uma nova revisão: as anteriores continuam guardadas como foram entregues.</Dica>}
         </Box>
-        {!emitido && <SituacaoRascunho calculo={calculo} />}
+        {!emitido && <SituacaoRascunho calculo={calculo} aviso={avisoAtencaoPct} />}
         {vistas.length > 1 && <SeletorRevisao vistas={vistas} atual={vista.id} escolher={escolher} />}
         <Box sx={{ p: '10px 12px', borderRadius: '3px', fontSize: 12, lineHeight: 1.45, ...(vista.notaAlerta ? { bgcolor: '#FBE1C6', color: '#8A3F04' } : { bgcolor: '#EEF1F6', color: '#34446A' }) }}>{vista.nota}</Box>
         {emitido && (

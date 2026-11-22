@@ -3,7 +3,8 @@
 // por isso fica tudo neste arquivo. A interface espelha `PonteDesktop` em ribasrig-frontend/src/services/arquivos.ts.
 import { contextBridge, ipcRenderer } from 'electron';
 
-const VERSAO = '1.0.0';
+// Versão do package.json, passada pelo processo principal (main.ts, additionalArguments): o preload com sandbox não lê arquivos
+const VERSAO = process.argv.find((a) => a.startsWith('--ribasrig-versao='))?.split('=')[1] ?? '';
 
 /** "Error invoking remote method 'x': ErroArquivo: mensagem" → "mensagem" (a tela mostra o texto). */
 async function chamar<T>(canal: string, ...args: unknown[]): Promise<T> {

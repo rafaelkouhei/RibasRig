@@ -40,7 +40,7 @@ teste e o que o servidor garante: [docs/backend.md](backend.md).
 
 ## Como rodar
 
-Pré-requisito: Node.js 20.19 ou mais novo.
+Pré-requisito: Node.js 22.12 ou mais novo (o Vitest 5 não roda no Node 20).
 
 ```bash
 npm ci

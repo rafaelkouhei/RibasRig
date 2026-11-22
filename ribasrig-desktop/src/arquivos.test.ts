@@ -3,7 +3,7 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
-import { gravarNaPasta, parteSegura, resolverDestino } from './arquivos';
+import { conferirPastaDoPlano, gravarNaPasta, parteSegura, resolverDestino } from './arquivos';
 
 test('caminho do plano no Windows: <raiz>\\<cliente>\\<nº>\\Relatório\\<arquivo>', () => {
   const c = resolverDestino({ pastaRaiz: 'C:\\Guindastes Ribas\\Planos de Rigging', partes: ['Kaefer Rip', '2607036', 'Relatório'], nome: 'Plano_de_Rigging_2607036_Rev2.pdf' }, 'win32');
@@ -34,4 +34,13 @@ test('grava criando as pastas', async () => {
   assert.equal(c, path.join(raiz, 'Kaefer Rip', '2610003', 'Cálculo', 'Memorial_2610003_Rev1.pdf'));
   assert.equal(await readFile(c, 'utf-8'), '%PDF-1.4');
   await assert.rejects(gravarNaPasta({ pastaRaiz: raiz, partes: ['a'], nome: 'v.pdf' }, new Uint8Array()), /vazio/);
+});
+
+test('arquivos do plano só em <cliente>\\<nº>\\<Relatório|Cálculo|Desenhos>', () => {
+  assert.doesNotThrow(() => conferirPastaDoPlano(['Kaefer Rip', '2607036', 'Relatório']));
+  assert.doesNotThrow(() => conferirPastaDoPlano(['Kaefer Rip', '2610003', 'Cálculo']));
+  assert.throws(() => conferirPastaDoPlano(['Kaefer Rip', '2607036', 'Outra']), /Pasta do plano inválida/);
+  assert.throws(() => conferirPastaDoPlano(['Kaefer Rip', 'Windows', 'Relatório']), /Pasta do plano inválida/);
+  assert.throws(() => conferirPastaDoPlano(['Kaefer Rip', '2607036']), /Pasta do plano inválida/);
+  assert.throws(() => conferirPastaDoPlano(['', '2607036', 'Desenhos']), /Pasta do plano inválida/);
 });

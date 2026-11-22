@@ -167,6 +167,8 @@ class TestClientesEConfiguracoes:
         # Fora da faixa, ou com o aviso de atenção igual ou acima do limite: recusado
         assert admin.put('/api/configuracoes/', {**cfg, 'limite_pct': 49}, format='json').status_code == 400
         assert admin.put('/api/configuracoes/', {**cfg, 'limite_pct': 101}, format='json').status_code == 400
+        # Conferido com 2 casas, como o banco guarda: 75,004 vira 75,00 = aviso de 75 → recusado
+        assert admin.put('/api/configuracoes/', {**cfg, 'limite_pct': 75.004, 'aviso_atencao_pct': 75}, format='json').status_code == 400
         r = admin.put('/api/configuracoes/', {**cfg, 'limite_pct': 70, 'aviso_atencao_pct': 75}, format='json')
         assert r.status_code == 400 and 'menor que o limite' in r.json()['detail']
         # Só o Administrador muda

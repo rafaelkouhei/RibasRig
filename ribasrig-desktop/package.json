@@ -2,6 +2,9 @@
   "name": "ribasrig-desktop",
   "productName": "RibasRig",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "description": "Sistema RibasRig — Planos de Rigging da Guindastes Ribas (aplicativo para o computador do escritório)",
   "private": true,
   "main": "dist/main.js",

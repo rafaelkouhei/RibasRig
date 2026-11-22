@@ -21,6 +21,19 @@ export function parteSegura(nome: string): string {
 
 export interface PedidoGravacao { pastaRaiz: string; partes: string[]; nome: string }
 
+export const SUBPASTAS = ['Relatório', 'Cálculo', 'Desenhos'] as const;
+
+/**
+ * Os arquivos do PLANO só vão para <cliente>\<nº>\<Relatório|Cálculo|Desenhos>: nº = AAMM + 3 dígitos e a subpasta
+ * de uma lista fechada. Assim a página não escolhe pastas livres dentro da raiz (o pedido da tela é sempre esse).
+ */
+export function conferirPastaDoPlano(partes: string[]): void {
+  const [cliente, numero, subpasta] = partes;
+  if (partes.length !== 3 || !cliente?.trim() || !/^\d{7}$/.test(numero ?? '') || !(SUBPASTAS as readonly string[]).includes(subpasta ?? '')) {
+    throw new ErroArquivo(`Pasta do plano inválida: use <cliente>\\<nº>\\<${SUBPASTAS.join('|')}>.`);
+  }
+}
+
 /** Caminho final, conferido. `plataforma` existe para testar regras do Windows em qualquer sistema. */
 export function resolverDestino(p: PedidoGravacao, plataforma: NodeJS.Platform = process.platform): string {
   const caminho = plataforma === 'win32' ? path.win32 : path.posix;

@@ -104,7 +104,6 @@ function Formulario() {
   const [artAberto, setArtAberto] = useState(false);
   const [emitindo, setEmitindo] = useState(false);
   const [recemEmitido, setRecemEmitido] = useState(false);
-  const [criandoRevisao, setCriandoRevisao] = useState(false);
   const [pergunta, setPergunta] = useState<Pergunta | null>(null);
 
   const planoRef = useRef<PlanoRigging | null>(null);
@@ -268,9 +267,7 @@ function Formulario() {
 
   const criarNovaRevisao = () => {
     if (!plano) return;
-    setCriandoRevisao(true);
     navegar(`/planos/${plano.numero}/revisao`);
-    setCriandoRevisao(false);
   };
 
   // ---------- atalhos da tela do plano (a lista fica em components/Atalhos.tsx) ----------
@@ -414,7 +411,7 @@ function Formulario() {
         <Box component="section" aria-label={somenteLeitura ? 'Plano emitido' : `Etapa ${etapa}`} sx={{ bgcolor: '#fff', border: `1px solid ${COR.borda}`, borderRadius: '3px', p: { xs: 2, md: '20px 24px' }, minWidth: 0 }}>
           {aviso && !somenteLeitura && <Info sx={{ mb: 2 }}>{aviso}</Info>}
           {somenteLeitura && plano ? (
-            <Emitido plano={plano} cad={cad} caminho={caminhoPdf} recemEmitido={recemEmitido} novaRevisao={criarNovaRevisao} criando={criandoRevisao} />
+            <Emitido plano={plano} cad={cad} caminho={caminhoPdf} recemEmitido={recemEmitido} novaRevisao={criarNovaRevisao} />
           ) : (
             <>
               {etapa === 1 && <EtapaDados {...props} criadoEm={plano?.criadoEm ?? null} />}

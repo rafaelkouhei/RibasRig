@@ -55,12 +55,12 @@ Nomes antigos `formatarNumero`, `formatarData`, `formatarPercentual`, `lerNumero
 - **Cliente** `{ id, razaoSocial, nomePasta, cnpj ('' = não informado), endereco, cidade, uf, cep, locaisObra: LocalObra[], contato, telefone, email, exemplo }`; `LocalObra { nome, endereco, cidade, uf, cep }`.
 - **PlanoRigging** = `DadosPlano` + `{ id, numero, situacaoDocumento ('rascunho'|'emitido'), revisoes: Revisao[], criadoEm, criadoPor, atualizadoEm }`.
   - `DadosPlano`: `clienteId, obra {mesmoEnderecoContratante, nome, endereco, cidade, uf, cep}, dataOperacao, descricaoOperacao, rigger, art, artRegistradaEm, contratoArt {numero, celebradoEm, valor, termino}, carga {descricao, comprimentoM, larguraM, alturaM, pesoKg}, tipoIcamentoId, lingada, anguloInferiorGraus (sem balancim = ângulo único), anguloSuperiorGraus, dispositivo {acessorioId, descricao, quantidade, pesoUnitarioKg}, cargasExtrasKg, guindasteId, tabelaId, comprimentoLancaM, raioM, guindastesAdicionais {guindasteId, tabelaId, raioM, pct}[], quadranteInicial, quadranteFinal, ventoMaxMs, raioIsolamentoM, dormente {larguraCm, comprimentoCm, quantidade}, anexos {desenhos, artPlano, arquivoArt}, etapaAtual, copiaDe, exemplo`. Números podem ser `null` (rascunho).
-  - `Revisao { numero, emitidaEm, emitidaPor, origem ('excel'|'sistema'), cadastradaEm, resultados: ResultadosRevisao, arquivoPdf, observacao }`.
+  - `Revisao { numero, emitidaEm, emitidaPor, origem ('excel'|'sistema'), cadastradaEm, resultados: ResultadosRevisao, arquivoPdf, observacao, limitePct?, avisoAtencaoPct? }` (limite e aviso usados na emissão; ausentes = valem os das Configurações).
   - `ResultadosRevisao`: cópia de **todos** os resultados por item — `cargaKg, lingadaKg, dispositivosKg, extrasKg, pbKg, guindastes[] (principal + adicionais: raio, %, carga, capacidade, taxa, laudo), capacidadeKg, taxaGuindastePct, referenciaConservadoraKg, taxaReferenciaPct, posicoes[] (posição, acessório, ângulo, tração, unidade, capacidade, taxa), sapatas {momentoKgfm, forcaKgf, esforcoKgf, areaCm2, rmet}, raioIsolamentoM, ventoMaxMs, situacaoSeguranca, comoNoDocumento` (só Rev. do Excel: textos como impressos, ex. `cap: '7,95'`). Campos `null` = não consta / inválido.
   - Rascunho não tem número de revisão; a primeira emissão é a Rev. 1. Rascunho com `revisoes.length > 0` = "Rascunho da Rev. N+1".
 - **EventoHistorico** `{ id, planoNumero, tipo ('emissao'|'calculo'|'anexo'|'cadastro'|'edicao'), titulo, detalhe, usuario, quando }`.
 - **Usuario** `{ id, nome, usuario (login), perfil ('admin'|'engenheiro'|'operacao'), ativo, principal, trocarSenha, ultimoAcesso, observacao }` — sem e-mail.
-- **Configuracoes** `{ pastaRaiz, nomeArquivo ('Plano_de_Rigging_{nº}_Rev{rev}.pdf'), empresa {razaoSocial, cnpj, ie, endereco, cep}, responsavel {nomeCompleto, nomeAssinatura, titulo, crea, rnp, rpp, assinatura}, avisoAtencaoPct, ventoPadraoMs, numeracao {descricao} }`.
+- **Configuracoes** `{ pastaRaiz, nomeArquivo ('Plano_de_Rigging_{nº}_Rev{rev}.pdf'), empresa {razaoSocial, cnpj, ie, endereco, cep}, responsavel {nomeCompleto, nomeAssinatura, titulo, crea, rnp, rpp, assinatura}, limitePct, avisoAtencaoPct, ventoPadraoMs, numeracao {descricao} }`.
 
 ## 4. `calculos.ts` — funções puras do motor
 
@@ -103,7 +103,7 @@ Nomes antigos `formatarNumero`, `formatarData`, `formatarPercentual`, `lerNumero
 - `formDoPlano(dados)` / `planoDoForm(form, base)` / `dadosVazios(vento?)` / `formVazio(vento?)` / `artsEmUso(planos)`.
 - `revisaoAtual(p)`, `proximaRevisao(p)`, `rotuloDocumento(p)` (`'Rascunho'`, `'Rascunho da Rev. 3'`, `'Emitido · Rev. 2'`).
 - `nomeArquivoPlano(modelo, numero, rev)` → `'Plano_de_Rigging_2607036_Rev2.pdf'`; `caminhoPlano(config, nomePasta, numero, rev)` → `'C:\…\Planos de Rigging\Kaefer Rip\2607036\Relatório\Plano_de_Rigging_2607036_Rev2.pdf'` (com `/` quando a pasta raiz é do macOS/Linux); `pastaDe(caminho)` → a pasta do caminho, em qualquer sistema.
-- Rascunho local: `CHAVE_RASCUNHO`, `lerRascunho()`, `gravarRascunho(r | null)`, `RascunhoLocal { numero, form, etapa, salvoEm }`.
+- Rascunho local: `CHAVE_RASCUNHO`, `lerRascunho()`, `gravarRascunho(r | null)`, `RascunhoLocal { numero, form, etapa, salvoEm, usuario? }` (a tela Início só oferece o rascunho do mesmo usuário).
 - Constantes: `ETAPAS`, `POSICOES`, `NOME_POSICAO` ('pernas inferiores'), `ROTULO_POSICAO` ('Pernas inferiores').
 
 ```ts
@@ -144,8 +144,8 @@ Duas implementações com a mesma assinatura, escolhidas por `VITE_API`: `apiMoc
 |---|---|
 | Acesso | `login(usuario, senha)` → `{token, usuario}` (perfil vem do usuário; usuários: `giuliano.breda`, `rigger.campo`; mock aceita qualquer senha preenchida) · `sair()` |
 | Planos | `listarPlanos()` · `obterPlano(numero)` · `criarPlano(dados)` (número gerado, nunca digitado) · `duplicarPlano(numero)` · `salvarRascunho(plano)` (mantém id/número; emitido → 409) · `emitirPlano(numero, observacao?)` (recalcula; se `podeEmitir`, cria Revisão N+1 com cópia dos resultados e trava; senão 422 com motivos) · `novaRevisao(numero)` (volta a rascunho da Rev. N+1, mesmo número) · `criarLote(dados, qtd)` · `historicoPlano(numero)` |
-| Cadastros | `listarGuindastes()` · `salvarGuindaste(g)` (ordena gráficos, 1 laudo atual) · `listarAcessorios()` · `salvarAcessorio(a)` · `desativarAcessorio(id)` (não apaga) · `registrarInspecao(id, registro, destino, motivo)` · `listarPadroesInspecao()` · `salvarPadraoInspecao(p)` (exige 1 item) · `listarClientes()` · `salvarCliente(c)` |
-| Regras | `listarTiposIcamento()` · `salvarTipoIcamento(t)` · `listarRegras()` · `salvarRegra(r)` (nova versão) · `excluirRegra(id)` — itens do sistema são somente leitura (409) |
+| Cadastros | `listarGuindastes()` · `salvarGuindaste(g)` (ordena gráficos, 1 laudo atual) · `listarAcessorios()` · `salvarAcessorio(a)` · `desativarAcessorio(id)` (não apaga) · `reativarAcessorio(id)` (só inativo) · `registrarInspecao(id, registro, destino, motivo)` · `listarPadroesInspecao()` · `salvarPadraoInspecao(p)` (exige 1 item) · `listarClientes()` · `salvarCliente(c)` |
+| Regras | `listarTiposIcamento()` · `salvarTipoIcamento(t)` (só montagens que o cálculo cobre) · `excluirTipoIcamento(id)` (409 se usado) · `listarRegras()` · `salvarRegra(r)` (nova versão) · `excluirRegra(id)` — itens do sistema são somente leitura (409) |
 | Usuários | `listarUsuarios()` · `criarUsuario({nome, usuario, perfil})` → `{usuario, senhaProvisoria: 'Ribas-4821'}` · `salvarUsuario(u)` · `gerarSenhaProvisoria(id)` |
 | Config. | `obterConfiguracoes()` · `salvarConfiguracoes(c)` |
 | Infra | `paraApi`/`daApi` (camelCase ⇄ snake_case, único lugar), `http(metodo, url, corpo)` (fetch com JWT e renovação do token), `MODO_API`, `agora()` (HOJE + hora do relógio), `SENHA_PROVISORIA` (só no mock) |

@@ -38,7 +38,7 @@ ribasrig/
 > [docs/backend.md](docs/backend.md#servidor-dedicado-vps), ainda não testado.
 
 **Pré-requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) aberto e
-[Node.js](https://nodejs.org/) 20.19 ou mais novo.
+[Node.js](https://nodejs.org/) 22.12 ou mais novo (o Vitest e o Electron pedem isso; `.nvmrc` na raiz).
 
 1. **Servidor:** siga "Como rodar" em [docs/backend.md](docs/backend.md#como-rodar-servidor-local) (criar o
    `.env`, `docker compose up -d --build` e, para a demonstração, `carregar_exemplo`).
@@ -60,7 +60,7 @@ memória; qualquer senha entra).
 | `ribasrig-backend` | `.venv/bin/pytest` | motor de cálculo, API, permissões, documentos, limite de login, limite da taxa | 140 |
 | `ribasrig-frontend` | `npm run typecheck && npm test` | regras em TypeScript, cliente HTTP, lógica das telas | 240 |
 | ponta a ponta | no `ribasrig-frontend`, com o servidor no ar ([docs/frontend.md](docs/frontend.md#como-rodar)) | criar, anexar e emitir: o servidor recalcula o mesmo que a tela mostra | 5 |
-| `ribasrig-desktop` | `npm test && npm run fumaca` | regras de caminho e protocolo; teste de fumaça do aplicativo | 9 + fumaça |
+| `ribasrig-desktop` | `npm test && npm run fumaca` | regras de caminho e protocolo; teste de fumaça do aplicativo | 10 + fumaça |
 
 Os valores de aceitação vêm de um plano real da empresa (2607036): carga bruta 3.746,62 kg, capacidade no raio de
 5,0 m de 9.260 kg, taxa do guindaste 40,46%, esforço nas sapatas 7.940,68 kgf, RMET 3,18 kgf/cm². A Rev. 1 desse

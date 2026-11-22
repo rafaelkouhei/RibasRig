@@ -75,7 +75,7 @@ function Conteudo({ d }: { d: PlanoCalculado }) {
             <Pagina secao={secao} d={d} vista={vista} />
           </DestaqueCtx.Provider>
         </Box>
-        <Lateral plano={plano} calculo={calculo} vistas={vistas} vista={vista} escolher={escolher} />
+        <Lateral plano={plano} calculo={calculo} vistas={vistas} vista={vista} escolher={escolher} avisoAtencaoPct={d.config.avisoAtencaoPct} />
       </Box>
     </Box>
   );

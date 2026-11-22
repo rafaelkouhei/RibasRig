@@ -5,7 +5,7 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { BrowserWindow, Menu, app, dialog, ipcMain, net, protocol, session, shell, type IpcMainInvokeEvent, type MenuItemConstructorOptions } from 'electron';
-import { ErroArquivo, gravarNaPasta, type PedidoGravacao } from './arquivos';
+import { conferirPastaDoPlano, ErroArquivo, gravarNaPasta, type PedidoGravacao } from './arquivos';
 import { lerConfiguracao, type Configuracao } from './config';
 import { ESQUEMA, HOST, ORIGEM, entregarDoPacote, pagina, repassarParaApi } from './protocolo';
 import { paginaServidorDesligado, servidorNoAr, subirServidor } from './servidor';
@@ -106,6 +106,7 @@ function criarJanela(): void {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true, spellcheck: false,
       devTools: !app.isPackaged,
+      additionalArguments: [`--ribasrig-versao=${app.getVersion()}`],
     },
   });
   janela.once('ready-to-show', () => { if (!FUMACA) janela?.show(); });
@@ -142,6 +143,7 @@ function registrarPonte(): void {
   ipcMain.handle('arquivo:salvarNaPasta', async (e, v: unknown) => {
     daPagina(e);
     const p = pedidoGravacao(v);
+    conferirPastaDoPlano(p.partes);
     const caminho = await gravarNaPasta(p, p.dados);
     gravados.add(caminho);
     return caminho;

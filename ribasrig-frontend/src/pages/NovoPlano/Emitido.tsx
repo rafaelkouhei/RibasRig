@@ -11,8 +11,8 @@ import { COR, Info, TituloEtapa } from './ui';
 
 const medida = (v: number | null) => (v == null ? '—' : fmt(v, casasDe(v)));
 
-export function Emitido({ plano, cad, caminho, recemEmitido, novaRevisao, criando }: {
-  plano: PlanoRigging; cad: Cadastros; caminho: string; recemEmitido: boolean; novaRevisao: () => void; criando: boolean;
+export function Emitido({ plano, cad, caminho, recemEmitido, novaRevisao }: {
+  plano: PlanoRigging; cad: Cadastros; caminho: string; recemEmitido: boolean; novaRevisao: () => void;
 }) {
   const rev = revisaoAtual(plano);
   const res = rev?.resultados;
@@ -47,7 +47,7 @@ export function Emitido({ plano, cad, caminho, recemEmitido, novaRevisao, criand
       </Box>
       <Info sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <Box sx={{ flexGrow: 1, minWidth: 240 }}><b>Plano emitido · somente leitura.</b> Para mudar algo, crie uma nova revisão (Rev. {(rev?.numero ?? 0) + 1}); as revisões emitidas ficam guardadas como foram entregues.</Box>
-        <Button variant="outlined" onClick={novaRevisao} disabled={criando} sx={{ minHeight: 40, bgcolor: '#fff', borderColor: COR.marinho }}>{criando ? 'Criando…' : 'Criar nova revisão'}</Button>
+        <Button variant="outlined" onClick={novaRevisao} sx={{ minHeight: 40, bgcolor: '#fff', borderColor: COR.marinho }}>Criar nova revisão</Button>
       </Info>
       <TituloEtapa titulo={`Resumo do plano nº ${plano.numero} · Rev. ${rev?.numero ?? 1}`} texto="Somente leitura. Estes são os resultados gravados na emissão; o plano emitido não é recalculado." />
       <Box component="dl" sx={{ m: 0, border: `1px solid ${COR.borda}`, borderRadius: '3px', overflow: 'hidden' }}>

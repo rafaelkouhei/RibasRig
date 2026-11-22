@@ -10,17 +10,11 @@ import { AbaRegras } from './calculos/AbaRegras';
 import { AbaTipos } from './calculos/AbaTipos';
 import { TopoCalculos, type AbaCalculos } from './calculos/comum';
 
-/**
- * A API não tem DELETE de tipo de içamento. A exclusão vale para esta sessão (some da lista e não volta
- * ao recarregar a aba); no back-end real: DELETE /api/tipos-icamento/{id}/.
- */
-const tiposExcluidos = new Set<string>();
-
 interface Dados { regras: RegraCalculo[]; tipos: TipoIcamento[]; acessorios: Acessorio[]; aviso: number }
 
 async function carregar(): Promise<Dados> {
   const [regras, tipos, acessorios, config] = await Promise.all([api.listarRegras(), api.listarTiposIcamento(), api.listarAcessorios(), api.obterConfiguracoes()]);
-  return { regras, tipos: tipos.filter((t) => !tiposExcluidos.has(t.id)), acessorios, aviso: config.avisoAtencaoPct };
+  return { regras, tipos, acessorios, aviso: config.avisoAtencaoPct };
 }
 
 export default function Calculos() {
@@ -59,6 +53,6 @@ export default function Calculos() {
     <AbaRegras regras={dados.regras} setRegras={setRegras} tipos={dados.tipos} aviso={dados.aviso || ATENCAO_PADRAO_PCT} podeEditar={podeEditar} autor={autor} />
   ) : (
     <AbaTipos tipos={dados.tipos} setTipos={setTipos} regras={dados.regras} acessorios={dados.acessorios} podeEditar={podeEditar} autor={autor}
-      onExcluido={(id) => { tiposExcluidos.add(id); setTipos((l) => l.filter((t) => t.id !== id)); }} />
+      onExcluido={(id) => setTipos((l) => l.filter((t) => t.id !== id))} />
   );
 }
