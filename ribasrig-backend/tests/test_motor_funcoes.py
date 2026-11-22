@@ -115,6 +115,9 @@ class TestRegras:
         assert avaliar_expressao('0.5')[1] == 'Use vírgula como separador decimal (ex.: 0,5).'
         assert avaliar_expressao('__import__("os")')[1] is not None
         assert avaliar_expressao('2^1000')[1].startswith('Resultado inválido: a conta não dá um número')
+        # Estouros do Decimal fora de pot() também viram "inválido" (antes: erro 500 ao salvar a regra)
+        for estouro in ('cos(10^31)', '((9^100)^100)^100 * ((9^100)^100)^100', '1 / ((0,1^100)^100)^100'):
+            assert avaliar_expressao(estouro) == (None, 'Resultado inválido: a conta não dá um número (infinito ou indefinido).')
         assert avaliar_expressao('(' * 400 + '1' + ')' * 400)[1] is not None
 
     def test_ler_num(self):

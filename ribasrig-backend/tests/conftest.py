@@ -1,3 +1,5 @@
+import io
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -24,7 +26,7 @@ def _ambiente(settings, tmp_path, monkeypatch):
 
 @pytest.fixture
 def cenario(db):
-    call_command('carregar_exemplo', stdout=open('/dev/null', 'w'))
+    call_command('carregar_exemplo', stdout=io.StringIO())  # sem /dev/null: roda também no Windows
 
 
 def cliente_de(usuario) -> APIClient:

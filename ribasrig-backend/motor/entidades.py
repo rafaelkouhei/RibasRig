@@ -1,6 +1,6 @@
 """Entradas do motor: cópias simples dos cadastros e do plano, sem Django.
 
-A camada Django monta estes objetos a partir dos models (planos/motor_adapter.py); os testes do
+A camada Django monta estes objetos a partir dos models (motor/conversao.py, chamado em planos/servicos.py); os testes do
 motor montam direto, com os valores do plano 2607036.
 """
 from __future__ import annotations

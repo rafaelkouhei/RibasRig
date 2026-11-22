@@ -1,0 +1,18 @@
+import contas.models
+from django.db import migrations
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('contas', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.AlterModelManagers(
+            name='usuario',
+            managers=[
+                ('objects', contas.models.UsuarioManager()),
+            ],
+        ),
+    ]

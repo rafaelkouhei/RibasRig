@@ -139,6 +139,11 @@ def emitir(numero: str, usuario, observacao: str = '') -> PlanoRigging:
     if p.art:
         # Trava os planos com a mesma ART: duas emissões ao mesmo tempo não usam a mesma ART
         list(PlanoRigging.objects.select_for_update().filter(art=p.art).order_by('id').values_list('id', flat=True))
+    # A tela só oferece guindastes ativos; o servidor garante o mesmo (o rascunho pode ter sido salvo antes da desativação)
+    ids_guindastes = {p.guindaste_id, *p.guindastes_adicionais.values_list('guindaste_id', flat=True)} - {None}
+    inativos = list(Guindaste.objects.filter(id__in=ids_guindastes, ativo=False).values_list('modelo', flat=True))
+    if inativos:
+        raise RegraNegocio(f'Guindaste inativo no cadastro: {", ".join(sorted(inativos))}. Escolha um guindaste ativo.')
     r = calcular(p)
     if not r.pode_emitir:
         raise RegraNegocio(texto_bloqueio(r))

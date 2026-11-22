@@ -27,3 +27,7 @@ ribasrig-desktop/release/
 
 # Arquivos enviados ao servidor quando ele roda fora do Docker
 ribasrig-backend/dados/
+
+# Backups do banco e dos arquivos (docs/backend.md): têm dados de clientes e hashes de senha
+*.dump
+backup-*/

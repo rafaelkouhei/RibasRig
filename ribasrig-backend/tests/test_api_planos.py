@@ -132,6 +132,13 @@ class TestEmissao:
         assert admin.post(f'/api/planos/{numero}/emitir/').status_code == 200
         assert Revisao.objects.get(plano__numero=numero, numero=1).entradas['limite_pct'] == '70.00'
 
+    def test_guindaste_inativo_nao_emite(self, admin):
+        from cadastros.models import Guindaste
+        numero = plano_pronto(admin)
+        Guindaste.objects.filter(id=PlanoRigging.objects.get(numero=numero).guindaste_id).update(ativo=False)
+        r = admin.post(f'/api/planos/{numero}/emitir/')
+        assert r.status_code == 422 and r.json()['detail'].startswith('Guindaste inativo no cadastro')
+
     def test_emite_revisao_1_e_trava(self, admin):
         numero = plano_pronto(admin)
         r = admin.post(f'/api/planos/{numero}/emitir/', {'observacao': 'Primeira emissão'}, format='json')

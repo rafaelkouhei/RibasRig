@@ -70,6 +70,27 @@ class TestAcessorios:
         corpo = {'data': '2026-10-08', 'resultado': 'aprovado', 'itens': [{'texto': 'a', 'conforme': True}], 'proxima': '2027-01-01'}
         assert admin.post('/api/acessorios/1/inspecoes/', corpo, format='json').json()['detail'] == 'A inspeção não pode ter data futura.'
 
+    def test_edicao_nao_contorna_descarte_desativacao_nem_inspecao(self, admin):
+        from cadastros.models import Acessorio
+        a = um(admin, '/api/acessorios/', 1)
+        # Adiar a próxima inspeção sem nova inspeção: recusado; antecipar: livre; com nova inspeção: aceito
+        r = admin.put('/api/acessorios/1/', {**a, 'proxima_inspecao': '2027-12-31'}, format='json')
+        assert (r.status_code, r.json()['detail']) == (400, 'Para adiar a próxima inspeção, informe a data da nova inspeção (ou registre a inspeção).')
+        assert admin.put('/api/acessorios/1/', {**a, 'proxima_inspecao': a['ultima_inspecao']}, format='json').status_code == 200
+        a = um(admin, '/api/acessorios/', 1)
+        r = admin.put('/api/acessorios/1/', {**a, 'ultima_inspecao': '2026-10-08', 'proxima_inspecao': '2027-04-08'}, format='json')
+        assert r.json()['detail'] == 'A última inspeção não pode ter data futura.'
+        r = admin.put('/api/acessorios/1/', {**a, 'ultima_inspecao': '2026-10-07', 'proxima_inspecao': '2027-04-07'}, format='json')
+        assert r.status_code == 200
+        # Descartado não volta; inativo só volta por /reativar/
+        Acessorio.objects.filter(id=1).update(situacao='descartado', motivo_descarte='Costura rompida')
+        a = um(admin, '/api/acessorios/', 1)
+        assert admin.put('/api/acessorios/1/', {**a, 'situacao': 'uso'}, format='json').status_code == 409
+        assert admin.put('/api/acessorios/1/', {**a, 'situacao': 'descartado'}, format='json').status_code == 200
+        admin.post('/api/acessorios/2/desativar/')
+        b = um(admin, '/api/acessorios/', 2)
+        assert admin.put('/api/acessorios/2/', {**b, 'situacao': 'uso'}, format='json').status_code == 409
+
     def test_desativar_e_reativar(self, admin):
         assert admin.post('/api/acessorios/2/desativar/').json()['situacao'] == 'inativo'
         assert admin.post('/api/acessorios/2/reativar/').json()['situacao'] == 'uso'

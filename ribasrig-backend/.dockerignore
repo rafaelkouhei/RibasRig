@@ -6,3 +6,6 @@ __pycache__
 dados
 tests
 .DS_Store
+# Backups do banco e dos arquivos (docs/backend.md): nunca dentro da imagem
+*.dump
+backup-*

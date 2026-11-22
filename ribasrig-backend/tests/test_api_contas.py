@@ -39,6 +39,21 @@ class TestLogin:
     def test_me(self, admin):
         assert admin.get('/api/auth/me/').json()['usuario'] == 'giuliano.breda'
 
+
+class TestPrimeiroAdministrador:
+    """`manage.py createsuperuser` (passo da instalação nova) precisa dar um administrador que entra e gerencia."""
+
+    def test_superusuario_em_banco_vazio_e_admin_principal(self, anonimo):
+        u = get_user_model().objects.create_superuser('Admin.Ribas', password=SENHA_TESTE)
+        assert (u.username, u.perfil, u.principal, u.nome) == ('admin.ribas', 'admin', True, 'Admin.Ribas')
+        r = entrar(anonimo, 'Admin.Ribas', SENHA_TESTE)
+        assert r.status_code == 200
+        assert cliente_de(u).get('/api/usuarios/').status_code == 200
+
+    def test_segundo_superusuario_nao_vira_principal(self, cenario):
+        u = get_user_model().objects.create_superuser('outro.admin', password=SENHA_TESTE)
+        assert (u.perfil, u.principal) == ('admin', False)
+
     def test_logout_invalida_o_refresh(self, cenario, anonimo):
         refresh = entrar(anonimo, 'giuliano.breda', SENHA_TESTE).json()['refresh']
         assert anonimo.post('/api/auth/token/refresh/', {'refresh': refresh}, format='json').status_code == 200

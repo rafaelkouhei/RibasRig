@@ -328,6 +328,25 @@ def _historico_novo(existente: list[EventoAcessorio], recebido: list[dict]) -> l
     return recebido[:k]
 
 
+def _conferir_mudanca_de_situacao(a: Acessorio, d: dict) -> None:
+    """A edição não pode contornar o descarte, a desativação nem a inspeção (o plano confia nesses dados).
+
+    - descartado não volta (nem para uso, nem para inspeção);
+    - inativo só volta por /reativar/ (o front sempre manda 'inativo' de volta);
+    - a próxima inspeção só vai para mais tarde junto com uma nova última inspeção, que não pode ser futura.
+      Antecipar a próxima inspeção (mais conservador) continua livre."""
+    if a.situacao == 'descartado' and d['situacao'] != 'descartado':
+        raise Conflito('Acessório descartado não volta para uso nem para inspeção. Cadastre o item novo, se for o caso.')
+    if a.situacao == 'inativo' and d['situacao'] != 'inativo':
+        raise Conflito('Acessório inativo volta pelo botão "Reativar".')
+    nova_ultima = d['ultima_inspecao'] != a.ultima_inspecao
+    if nova_ultima and d['ultima_inspecao'] and d['ultima_inspecao'] > hoje():
+        raise DadosInvalidos('A última inspeção não pode ter data futura.')
+    adiou = d['proxima_inspecao'] and (a.proxima_inspecao is None or d['proxima_inspecao'] > a.proxima_inspecao)
+    if adiou and not (nova_ultima and d['ultima_inspecao']):
+        raise DadosInvalidos('Para adiar a próxima inspeção, informe a data da nova inspeção (ou registre a inspeção).')
+
+
 @transaction.atomic
 def _salvar_acessorio(a: Acessorio, dados) -> Acessorio:
     s = _Acessorio(data=dados)
@@ -349,6 +368,8 @@ def _salvar_acessorio(a: Acessorio, dados) -> Acessorio:
         raise DadosInvalidos('O vencimento precisa ser depois da data de entrada.')
     if d['ultima_inspecao'] and d['proxima_inspecao'] and d['proxima_inspecao'] < d['ultima_inspecao']:
         raise DadosInvalidos('A próxima inspeção precisa ser depois da última.')
+    if a.pk:
+        _conferir_mudanca_de_situacao(a, d)
 
     existente = list(a.historico.all()) if a.pk else []
     novos = _historico_novo(existente, d.pop('historico'))

@@ -1,5 +1,24 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
+
+
+class UsuarioManager(UserManager):
+    """Usuário sempre em minúsculas (o login converte o que foi digitado) e `createsuperuser` = Administrador.
+
+    Sem isso, `manage.py createsuperuser` criaria um perfil Operação (só consulta) e, com maiúsculas, um login
+    que nunca entra. O primeiro superusuário de um banco sem administrador principal vira o principal."""
+
+    use_in_migrations = True
+
+    def create_user(self, username, email=None, password=None, **extra_fields):
+        return super().create_user((username or '').lower(), email, password, **extra_fields)
+
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('perfil', Usuario.Perfil.ADMIN)
+        extra_fields.setdefault('nome', username)
+        if not self.filter(principal=True).exists():
+            extra_fields.setdefault('principal', True)
+        return super().create_superuser((username or '').lower(), email, password, **extra_fields)
 
 
 class Usuario(AbstractUser):
@@ -20,6 +39,8 @@ class Usuario(AbstractUser):
     observacao = models.CharField(max_length=300, blank=True, default='')
 
     REQUIRED_FIELDS: list[str] = []
+
+    objects = UsuarioManager()
 
     class Meta:
         verbose_name = 'usuário'

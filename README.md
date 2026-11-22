@@ -57,7 +57,7 @@ memória; qualquer senha entra).
 
 | projeto | comando | o que cobre | quantidade |
 |---|---|---|---|
-| `ribasrig-backend` | `.venv/bin/pytest` | motor de cálculo, API, permissões, documentos, limite de login, limite da taxa | 131 |
+| `ribasrig-backend` | `.venv/bin/pytest` | motor de cálculo, API, permissões, documentos, limite de login, limite da taxa | 135 |
 | `ribasrig-frontend` | `npm run typecheck && npm test` | regras em TypeScript, cliente HTTP, lógica das telas | 233 |
 | ponta a ponta | no `ribasrig-frontend`, com o servidor no ar ([docs/frontend.md](docs/frontend.md#como-rodar)) | criar, anexar e emitir: o servidor recalcula o mesmo que a tela mostra | 5 |
 | `ribasrig-desktop` | `npm test && npm run fumaca` | regras de caminho e protocolo; teste de fumaça do aplicativo | 9 + fumaça |

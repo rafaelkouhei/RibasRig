@@ -23,7 +23,8 @@ Os comandos abaixo rodam dentro da pasta `ribasrig-backend/`.
 Pré-requisito: Docker Desktop aberto.
 
 ```bash
-cp .env.example .env          # preencha POSTGRES_PASSWORD, DJANGO_SECRET_KEY e (opcional) RIBASRIG_SENHA_TESTE
+cp .env.example .env          # preencha POSTGRES_PASSWORD, DJANGO_SECRET_KEY e (opcional) RIBASRIG_SENHA_TESTE;
+                              # para a demonstração, RIBASRIG_HOJE=2026-10-07 (vazio = data real)
 docker compose up -d --build  # 1. sobe PostgreSQL + API em http://127.0.0.1:8000/api/ (migra o banco sozinho)
 docker compose exec api python manage.py carregar_exemplo   # 2. opcional: cenário de demonstração
 ```
@@ -44,6 +45,9 @@ Para um uso real (sem dados de exemplo), crie o primeiro administrador à mão e
 docker compose exec api python manage.py createsuperuser
 ```
 
+O `createsuperuser` cria um usuário com perfil **Administrador** (o primeiro vira o administrador principal) e grava o
+nome de usuário em minúsculas, como o login confere.
+
 A API e o banco só escutam em `127.0.0.1`: nada fica exposto na rede, e só o próprio computador acessa o servidor.
 Para um servidor dedicado, veja [Servidor dedicado (VPS)](#servidor-dedicado-vps).
 
@@ -61,7 +65,9 @@ Para um servidor dedicado, veja [Servidor dedicado (VPS)](#servidor-dedicado-vps
 ### Backup e restauração
 
 Os dados ficam em dois volumes: `banco` (PostgreSQL) e `arquivos` (PDFs enviados e gerados). Faça cópia dos dois
-antes de atualizar o Docker ou o sistema operacional (uma reinstalação do Docker Desktop pode apagar os volumes):
+antes de atualizar o Docker ou o sistema operacional (uma reinstalação do Docker Desktop pode apagar os volumes).
+O backup tem dados de clientes e hashes de senha: guarde-o **fora** da pasta do projeto, se puder. Dentro dela,
+`*.dump` e `backup-*` ficam fora da imagem Docker (`.dockerignore`) e do git (`.gitignore`).
 
 ```bash
 docker compose exec -T db pg_dump -U ribasrig -Fc ribasrig > backup-banco.dump
@@ -246,6 +252,7 @@ servidor faz e com que valores:
 | `RIBASRIG_LOG` | INFO | nível do log |
 | `RIBASRIG_CACHE_DIR` | `<tmp>/ribasrig-cache` | cache em arquivo (contador do limite de tentativas) |
 | `RIBASRIG_FONTE` / `RIBASRIG_FONTE_NEGRITO` | DejaVu (Docker) | fonte TrueType dos PDFs fora do Docker |
+| `RIBASRIG_PASSWORD_HASHERS` | PBKDF2 (padrão do Django) | lista separada por vírgulas dos hashers de senha do Django; normalmente não mexa |
 
 ## Documentos gerados
 

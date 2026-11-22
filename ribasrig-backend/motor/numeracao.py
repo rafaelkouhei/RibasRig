@@ -1,7 +1,7 @@
 """Numeração dos planos: AAMM + 3 dígitos pela DATA DE CRIAÇÃO; zera todo mês (espelha numeracao.ts).
 
 Aqui ficam só as regras puras. O bloqueio contra dois planos com o mesmo número é feito no banco
-(planos/numeracao.py: select_for_update + número único).
+(planos/servicos.py, reservar_numeros: select_for_update + número único).
 """
 from __future__ import annotations
 
