@@ -122,7 +122,7 @@ fmt(r.pbKg) // '3.746,62'   fmtPct(r.taxaGuindaste) // '40,46%'   r.situacaoSegu
 
 - `avaliarBruto(expr, env)` → número cru (lança `ErroExpressao`). `avaliarExpressao(expr, env)` → `{ok:true, valor}` | `{ok:false, erro, valor?}` (negativo/não finito = inválido). Sintaxe: `+ − * / ^` (e `× ÷ ·`), menos unário (`−2^2 = −4`), `cos/sen/tg` em graus (`cos(90) = 0`), `raiz`, `min`, `max`, `abs`, argumentos **só** com `;`, vírgula decimal. Sem `eval`.
 - `REGRAS_CALCULO` (r1 carga bruta, r2 capacidade, r9 taxa do guindaste, r3/r4 tração cinta, r5 manilha da carga, r8 manilha do gancho, r6 sapatas, r7 RMET; u1/u2 = "Exemplo da equipe (fictício)"), `TIPOS_ICAMENTO` (t1 padrão com balancim; t2/t3 exemplos sem balancim).
-- `ORIGENS_VARIAVEL`, `RESULTADOS_REGRA`, `ORIGENS_CAPACIDADE`, `conferirValor`, `faixaDaVariavel`, `valorDeTeste(catalogo, id)`, `testarRegra(regra, catalogo, aviso?)` → `{variaveis, resultado, capacidade, erroCapacidade, taxaPct, nivel, substituicao}`, `erroRegrasDoTipo(ids, catalogo)`, `rotuloOrigem`, `rotuloOrigemTipo`, `ID_REGRA_TAXA_GUINDASTE`.
+- `ORIGENS_VARIAVEL`, `RESULTADOS_REGRA`, `ORIGENS_CAPACIDADE`, `conferirValor`, `faixaDaVariavel`, `valorDeTeste(catalogo, id)`, `testarRegra(regra, catalogo, aviso?)` → `{variaveis, resultado, capacidade, erroCapacidade, taxaPct, nivel, substituicao}`, `erroRegrasDoTipo(ids, catalogo)`, `erroMontagemDoTipo(tipo)` (montagens que as fórmulas cobrem: sem balancim 2 ou 4 pernas; com balancim 4 + 2; outra = mensagem e bloqueio da emissão), `rotuloOrigem`, `rotuloOrigemTipo`, `ID_REGRA_TAXA_GUINDASTE`.
 
 ## 8. `art.ts`
 

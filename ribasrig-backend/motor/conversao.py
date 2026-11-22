@@ -43,7 +43,7 @@ def acessorio(d: dict) -> E.Acessorio:
 
 
 def tipo(d: dict) -> E.TipoIcamento:
-    return E.TipoIcamento(id=str(d['id']), balancim=bool(d['balancim']))
+    return E.TipoIcamento(id=str(d['id']), balancim=bool(d['balancim']), pernas=d.get('pernas'), pernas_superiores=d.get('pernas_superiores'))
 
 
 def cliente(d: dict) -> E.Cliente:

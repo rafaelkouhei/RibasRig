@@ -105,7 +105,7 @@ export function AbaRegras({ regras, setRegras, tipos, aviso, podeEditar, autor }
                 setRegras((l) => (eraNova ? [...l, salva] : l.map((x) => (x.id === salva.id ? salva : x))));
                 abrir(salva);
                 if (filtro === 'sistema') setFiltro('minhas');
-                notificar(eraNova ? 'Regra criada. Ela já pode ser usada em qualquer plano.' : `Regra salva como versão ${salva.versao}. Planos emitidos mantêm a versão usada.`);
+                notificar(eraNova ? 'Regra criada. Ela fica no catálogo como referência: o cálculo dos planos usa as fórmulas do sistema.' : `Regra salva como versão ${salva.versao}. Planos emitidos mantêm a versão usada.`);
               } catch (e) {
                 notificar(e instanceof Error ? e.message : 'Não foi possível salvar a regra.', 'warning');
               } finally {

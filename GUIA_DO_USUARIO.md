@@ -303,7 +303,12 @@ diferentes do endereço dele. O nome da pasta do cliente é usado na pasta dos p
   Use `+ − × ÷ ^`, parênteses, `cos`, `sen`, `tg` (em graus), `raiz`, `min`, `max`, `abs`, vírgula decimal e `;`
   entre argumentos (ex.: `max(3; 45)`). As regras do sistema são só leitura: use **Duplicar** para criar uma variação.
   Cada gravação vira uma nova versão, e os planos emitidos guardam a versão usada.
-- **Tipos de içamento:** com ou sem balancim, número de pernas, campos pedidos no formulário e as regras aplicadas.
+- **Tipos de içamento:** com ou sem balancim, número de pernas, campos pedidos no formulário e as regras de
+  referência. As montagens aceitas são as que o cálculo cobre: **sem balancim, 2 ou 4 pernas**; **com balancim, 4 pernas
+  até a carga e 2 do balancim ao gancho**. Um tipo antigo com outra montagem bloqueia a emissão até ser ajustado.
+- **O que o cálculo usa:** cintas, manilhas e taxa do guindaste saem das fórmulas do sistema (as mesmas das regras
+  padrão). As regras criadas ou duplicadas ficam no catálogo e no tipo como referência e documentação; elas ainda
+  não mudam o resultado do plano.
 
 ---
 

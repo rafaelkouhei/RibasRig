@@ -136,3 +136,13 @@ class TestRegras:
         catalogo = {r['id']: r for r in X.REGRAS}
         assert erro_regras_do_tipo(['r1', 'r3', 'r9'], catalogo) is None
         assert 'Taxa de utilização do guindaste' in erro_regras_do_tipo(['r3'], catalogo)
+
+
+def test_montagem_do_tipo_igual_ao_front():
+    from motor.regras import MSG_MONTAGEM_BALANCIM, MSG_MONTAGEM_SEM_BALANCIM, erro_montagem_do_tipo
+    assert erro_montagem_do_tipo(True, 4, 2) is None
+    assert erro_montagem_do_tipo(True, 4, 1) == MSG_MONTAGEM_BALANCIM
+    assert erro_montagem_do_tipo(True, 2, 2) == MSG_MONTAGEM_BALANCIM
+    assert erro_montagem_do_tipo(False, 2, 0) is None
+    assert erro_montagem_do_tipo(False, 4, 0) is None
+    assert erro_montagem_do_tipo(False, 1, 0) == MSG_MONTAGEM_SEM_BALANCIM

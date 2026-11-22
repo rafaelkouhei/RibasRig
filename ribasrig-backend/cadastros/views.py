@@ -725,6 +725,9 @@ def _salvar_tipo(t: TipoIcamento | None, dados, request) -> TipoIcamento:
         raise DadosInvalidos(erro)
     if not d['balancim']:
         d['pernas_superiores'] = 0
+    erro = motor_regras.erro_montagem_do_tipo(d['balancim'], d['pernas'], d['pernas_superiores'])
+    if erro:
+        raise DadosInvalidos(erro)
     if t is None:
         t = TipoIcamento(id=_proximo_id('t', TipoIcamento.objects.values_list('id', flat=True)), origem='criado', autor=_quem(request),
                          versao=0, criado_em_ordem=TipoIcamento.objects.count() + 1)

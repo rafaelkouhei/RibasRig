@@ -63,6 +63,9 @@ class Acessorio:
 class TipoIcamento:
     id: str
     balancim: bool
+    # None = não informado (testes do motor que só montam id e balancim): a montagem não é conferida
+    pernas: int | None = None
+    pernas_superiores: int | None = None
 
 
 @dataclass

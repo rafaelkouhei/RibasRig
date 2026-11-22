@@ -125,6 +125,14 @@ class TestRegrasETipos:
     def test_regra_usada_por_tipo_nao_sai(self, admin):
         assert admin.delete('/api/regras/u1/').status_code == 409
 
+    def test_tipo_so_com_montagem_que_o_calculo_cobre(self, admin):
+        t2 = um(admin, '/api/tipos-icamento/', 't2')
+        com_balancim = {**t2, 'nome': 'Balancim 1 perna', 'balancim': True, 'pernas': 4, 'pernas_superiores': 1}
+        r = admin.post('/api/tipos-icamento/', com_balancim, format='json')
+        assert (r.status_code, r.json()['detail'].split('.')[0]) == (400, 'Com balancim, o cálculo considera 4 pernas até a carga e 2 pernas do balancim ao gancho')
+        assert admin.post('/api/tipos-icamento/', {**com_balancim, 'pernas_superiores': 2}, format='json').status_code == 201
+        assert admin.post('/api/tipos-icamento/', {**t2, 'nome': 'Uma perna', 'pernas': 1}, format='json').status_code == 400
+
     def test_tipo_precisa_de_tracao_e_taxa(self, admin):
         t2 = um(admin, '/api/tipos-icamento/', 't2')
         r = admin.post('/api/tipos-icamento/', {**t2, 'nome': 'Novo tipo', 'regras': ['r1', 'u1']}, format='json')

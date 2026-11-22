@@ -1,6 +1,6 @@
 // Lógica pura da tela Cálculos (sem React): rascunhos de regra/tipo, validação para salvar e textos.
 import {
-  ORIGENS_CAPACIDADE, ORIGENS_VARIAVEL, RESULTADOS_REGRA, erroRegrasDoTipo, testarRegra, type TesteRegra,
+  ORIGENS_CAPACIDADE, ORIGENS_VARIAVEL, RESULTADOS_REGRA, erroMontagemDoTipo, erroRegrasDoTipo, testarRegra, type TesteRegra,
 } from '../../domain/regras';
 import type { Acessorio, CategoriaRegra, RegraCalculo, TipoIcamento, VariavelRegra } from '../../domain/types';
 
@@ -94,7 +94,8 @@ export function duplicarTipo(t: TipoIcamento, autor: string): TipoIcamento {
 export function alternarBalancim(t: TipoIcamento): TipoIcamento {
   const balancim = !t.balancim;
   return {
-    ...t, balancim, pernasSuperiores: balancim ? t.pernasSuperiores || 2 : 0,
+    // Com balancim, a única montagem que o cálculo cobre é 4 pernas até a carga + 2 até o gancho (erroMontagemDoTipo)
+    ...t, balancim, pernas: balancim ? 4 : t.pernas, pernasSuperiores: balancim ? 2 : 0,
     campos: { ...t.campos, pesoBalancim: balancim, anguloInferior: balancim, anguloSuperior: balancim, anguloUnico: !balancim },
   };
 }
@@ -124,7 +125,7 @@ export function erroSalvarTipo(t: TipoIcamento, catalogo: RegraCalculo[], tipos:
   const regras = erroRegrasDoTipo(t.regras, catalogo);
   if (regras) return regras;
   if (!t.campos.anguloInferior && !t.campos.anguloSuperior && !t.campos.anguloUnico) return 'Marque pelo menos um campo de ângulo das pernas.';
-  return null;
+  return erroMontagemDoTipo(t);
 }
 
 /** Prepara o tipo para gravar: geometria coerente com a montagem e aviso de acessório. */

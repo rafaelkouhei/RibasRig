@@ -362,6 +362,20 @@ def erro_regra(regra: dict, catalogo: dict[str, dict]) -> str | None:
 
 ID_REGRA_TAXA_GUINDASTE = 'r9'
 
+# Montagens que as fórmulas de tração (motor/calculos.py, tracoes_por_posicao) cobrem. Com balancim, as fórmulas
+# dividem por 2 pernas superiores e a manilha da carga por 4 pernas inferiores; sem balancim, P ÷ (2·cos) por perna
+# (exato com 2, conservador com 4). Outra montagem daria tração MENOR que a real, então não é aceita (espelha regras.ts).
+MSG_MONTAGEM_BALANCIM = ('Com balancim, o cálculo considera 4 pernas até a carga e 2 pernas do balancim ao gancho. '
+                         'Outra montagem ainda não é calculada pelo sistema.')
+MSG_MONTAGEM_SEM_BALANCIM = 'Sem balancim, o cálculo considera 2 ou 4 pernas até a carga. Outra montagem ainda não é calculada pelo sistema.'
+
+
+def erro_montagem_do_tipo(balancim: bool, pernas: int | None, pernas_superiores: int | None) -> str | None:
+    """(True, 4, 2) → None · (True, 4, 1) → MSG_MONTAGEM_BALANCIM · (False, 2, 0) → None · (False, 3, 0) → MSG_MONTAGEM_SEM_BALANCIM."""
+    if balancim:
+        return None if (pernas, pernas_superiores) == (4, 2) else MSG_MONTAGEM_BALANCIM
+    return None if pernas in (2, 4) else MSG_MONTAGEM_SEM_BALANCIM
+
 
 def erro_regras_do_tipo(regras_do_tipo: list[str], catalogo: dict[str, dict]) -> str | None:
     nomes = [catalogo.get(i, {}).get('nome', '') for i in regras_do_tipo]

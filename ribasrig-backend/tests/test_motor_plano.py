@@ -265,3 +265,16 @@ class TestExtrasEAdicionais:
         div = calcular(dict(d, guindastes_adicionais=[{'guindaste_id': 2, 'tabela_id': None, 'raio_m': '5.0', 'pct': '60'},
                                                       {'guindaste_id': 3, 'tabela_id': None, 'raio_m': '5.0', 'pct': '40'}]), '2607036')
         assert div.divisao_invalida
+
+
+def test_tipo_com_montagem_nao_calculada_bloqueia():
+    from motor.plano import TEXTO_MONTAGEM_NAO_CALCULADA
+    d = d2607036()
+    tipos = [C.tipo({**t, 'pernas_superiores': 1} if t['id'] == d['tipo_icamento_id'] else t) for t in X.TIPOS_ICAMENTO]
+    r = calcular_plano(EntradaCalculo(
+        dados=C.dados_plano(d), numero='2607036', acessorios=[C.acessorio(a) for a in X.ACESSORIOS],
+        guindastes=[C.guindaste(g) for g in X.GUINDASTES], tipos=tipos, clientes=[C.cliente(c) for c in X.CLIENTES],
+        hoje=HOJE, aviso_atencao_pct=Decimal('75'), arts_em_uso={p['art']: p['numero'] for p in X.PLANOS if p['art'] and p['numero'] != '2607036'},
+    ))
+    assert not r.pode_emitir
+    assert f'lingada incompleta ({TEXTO_MONTAGEM_NAO_CALCULADA})' in r.motivos_bloqueio

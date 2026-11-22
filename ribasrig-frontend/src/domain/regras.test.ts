@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { avaliarBruto, avaliarExpressao, ErroExpressao, erroRegrasDoTipo, MAX_FORMULA, REGRAS_CALCULO, testarRegra, TIPOS_ICAMENTO, valorDeTeste } from './regras';
+import { avaliarBruto, avaliarExpressao, ErroExpressao, erroMontagemDoTipo, erroRegrasDoTipo, MAX_FORMULA, MSG_MONTAGEM_BALANCIM, MSG_MONTAGEM_SEM_BALANCIM, REGRAS_CALCULO, testarRegra, TIPOS_ICAMENTO, valorDeTeste } from './regras';
 
 describe('avaliador: nomes herdados, × ÷ colados e limites', () => {
   it('constructor(), toString() e afins não são funções da fórmula', () => {
@@ -90,5 +90,14 @@ describe('catálogo de regras e tipos (igual ao protótipo)', () => {
     const t = testarRegra(REGRAS_CALCULO.find((r) => r.id === 'r3')!, REGRAS_CALCULO);
     expect(t.resultado.ok).toBe(true);
     expect(t.substituicao).toBe('Te = 3,45 ÷ (2 × cos(28))');
+  });
+  it('montagem do tipo: só as que as fórmulas de tração cobrem (igual a motor/regras.py)', () => {
+    expect(erroMontagemDoTipo({ balancim: true, pernas: 4, pernasSuperiores: 2 })).toBeNull();
+    expect(erroMontagemDoTipo({ balancim: true, pernas: 4, pernasSuperiores: 1 })).toBe(MSG_MONTAGEM_BALANCIM);
+    expect(erroMontagemDoTipo({ balancim: true, pernas: 2, pernasSuperiores: 2 })).toBe(MSG_MONTAGEM_BALANCIM);
+    expect(erroMontagemDoTipo({ balancim: false, pernas: 2, pernasSuperiores: 0 })).toBeNull();
+    expect(erroMontagemDoTipo({ balancim: false, pernas: 4, pernasSuperiores: 0 })).toBeNull();
+    expect(erroMontagemDoTipo({ balancim: false, pernas: 1, pernasSuperiores: 0 })).toBe(MSG_MONTAGEM_SEM_BALANCIM);
+    for (const t of TIPOS_ICAMENTO) expect(erroMontagemDoTipo(t)).toBeNull();
   });
 });

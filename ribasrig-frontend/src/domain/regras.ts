@@ -362,6 +362,20 @@ export function erroRegrasDoTipo(regrasDoTipo: string[], catalogo: RegraCalculo[
   return null;
 }
 
+/**
+ * Montagens que as fórmulas de tração (calculos.ts, tracoesPorPosicao) cobrem. Com balancim, as fórmulas dividem por
+ * 2 pernas superiores e a manilha da carga por 4 pernas inferiores; sem balancim, P ÷ (2·cos) por perna (exato com 2,
+ * conservador com 4). Outra montagem daria tração MENOR que a real, então não é aceita (espelha motor/regras.py).
+ */
+export const MSG_MONTAGEM_BALANCIM = 'Com balancim, o cálculo considera 4 pernas até a carga e 2 pernas do balancim ao gancho. Outra montagem ainda não é calculada pelo sistema.';
+export const MSG_MONTAGEM_SEM_BALANCIM = 'Sem balancim, o cálculo considera 2 ou 4 pernas até a carga. Outra montagem ainda não é calculada pelo sistema.';
+
+/** (balancim, 4, 2) → null · (balancim, 4, 1) → MSG_MONTAGEM_BALANCIM · (sem, 2) → null · (sem, 3) → MSG_MONTAGEM_SEM_BALANCIM */
+export function erroMontagemDoTipo(t: Pick<TipoIcamento, 'balancim' | 'pernas' | 'pernasSuperiores'>): string | null {
+  if (t.balancim) return t.pernas === 4 && t.pernasSuperiores === 2 ? null : MSG_MONTAGEM_BALANCIM;
+  return t.pernas === 2 || t.pernas === 4 ? null : MSG_MONTAGEM_SEM_BALANCIM;
+}
+
 // =============================================================================================
 // Tipos de içamento
 // =============================================================================================

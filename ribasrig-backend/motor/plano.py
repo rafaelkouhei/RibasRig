@@ -18,12 +18,14 @@ from .calculos import (
 )
 from .entidades import Acessorio, Cliente, DadosPlano, Guindaste, Tabela, TipoIcamento
 from .formatacao import Num, casas_de, data_br, fmt, fmt_pct
+from .regras import erro_montagem_do_tipo
 from .validacao import erro_numero_art, validar_campo
 
 POSICOES = ['pernasInferiores', 'pernasSuperiores', 'carga', 'gancho']
 NOME_POSICAO = {'pernasInferiores': 'pernas inferiores', 'pernasSuperiores': 'pernas superiores', 'carga': 'carga', 'gancho': 'gancho'}
 ROTULO_POSICAO = {'pernasInferiores': 'Pernas inferiores', 'pernasSuperiores': 'Pernas superiores', 'carga': 'Carga', 'gancho': 'Gancho'}
 POSICAO_INEXISTENTE = 'posição não existe neste tipo de içamento'
+TEXTO_MONTAGEM_NAO_CALCULADA = 'montagem do tipo de içamento (número de pernas) não é calculada pelo sistema; ajuste o tipo em Cálculos'
 
 
 @dataclass
@@ -278,6 +280,8 @@ def calcular_plano(e: EntradaCalculo) -> ResultadoPlano:  # noqa: C901 — espel
     problemas_lingada = [
         *(['nenhum acessório na lingada'] if not f.lingada else []),
         *([] if tipo else ['tipo de içamento não cadastrado']),
+        *([TEXTO_MONTAGEM_NAO_CALCULADA] if tipo and tipo.pernas is not None
+          and erro_montagem_do_tipo(tipo.balancim, tipo.pernas, tipo.pernas_superiores) else []),
         *problemas_itens,
         *[f'{NOME_POSICAO[r.posicao]}: {r.problema}' if r.problema == POSICAO_INEXISTENTE else r.problema
           for r in por_posicao if r.problema],

@@ -55,7 +55,8 @@ def calcular(p: PlanoRigging) -> ResultadoPlano:
         dados=C.dados_plano(dados_json(p)), numero=p.numero,
         acessorios=[C.acessorio(_acessorio_dict(a)) for a in acessorios],
         guindastes=[C.guindaste(_guindaste_dict(g)) for g in guindastes],
-        tipos=[C.tipo({'id': t.id, 'balancim': t.balancim}) for t in TipoIcamento.objects.all()],
+        tipos=[C.tipo({'id': t.id, 'balancim': t.balancim, 'pernas': t.pernas, 'pernas_superiores': t.pernas_superiores})
+               for t in TipoIcamento.objects.all()],
         clientes=[C.cliente({'id': c.id, 'razao_social': c.razao_social, 'endereco': c.endereco}) for c in Cliente.objects.all()],
         hoje=hoje(), aviso_atencao_pct=Configuracoes.atual().aviso_atencao_pct, limite_pct=Configuracoes.atual().limite_pct,
         arts_em_uso={art.strip(): numero for art, numero in outros_com_art},

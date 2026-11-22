@@ -137,7 +137,7 @@ function EditorTipo({ t, regras, acessorios, podeEditar, sujo, salvando, onMudar
     : `${t.origem === 'exemplo' ? 'Exemplo da equipe (fictício) · ' : 'Criado por '}${t.autor} · versão ${t.versao}`;
   const info = sistema
     ? `${textoUsoTipo(t).replace(/^u/, 'U')}. Na etapa Lingada do formulário, este tipo pede os ângulos inferior e superior e calcula as cintas, as manilhas da carga e do gancho e a taxa do guindaste.`
-    : `${t.balancim ? '' : 'Sem balancim: o formulário não pede peso de balancim nem dispositivos. '}Na etapa Lingada, o formulário pede só os campos marcados e calcula as regras escolhidas. ${t.origem === 'exemplo' ? `Exemplo da equipe (fictício), ${textoUsoTipo(t)}.` : 'Planos já emitidos guardam a versão usada.'}`;
+    : `${t.balancim ? '' : 'Sem balancim: o formulário não pede peso de balancim nem dispositivos. '}Na etapa Lingada, o formulário pede só os campos marcados e calcula as cintas, as manilhas e a taxa do guindaste com as fórmulas do sistema; as regras marcadas ficam registradas no tipo como referência. ${t.origem === 'exemplo' ? `Exemplo da equipe (fictício), ${textoUsoTipo(t)}.` : 'Planos já emitidos guardam a versão usada.'}`;
 
   return (
     <PainelEditor titulo={novo ? 'Novo tipo de içamento' : t.nome || 'Sem nome'} subtitulo={subtitulo} sujo={sujo}
@@ -169,11 +169,12 @@ function EditorTipo({ t, regras, acessorios, podeEditar, sujo, salvando, onMudar
           {/* Lado a lado só quando cabe; no editor estreito (1280 px) um embaixo do outro, sem cortar o rótulo */}
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 1.75 }}>
             <TextField select label="Pernas até a carga" value={t.pernas} onChange={(e) => mudar({ pernas: Number(e.target.value) })} slotProps={leitura} sx={sxCampo}>
-              <MenuItem value={2}>2 pernas</MenuItem><MenuItem value={4}>4 pernas</MenuItem>
+              {/* Só as montagens que as fórmulas cobrem (erroMontagemDoTipo): com balancim, 4 pernas + 2 superiores */}
+              {!t.balancim && <MenuItem value={2}>2 pernas</MenuItem>}<MenuItem value={4}>4 pernas</MenuItem>
             </TextField>
             {t.balancim && (
               <TextField select label="Pernas balancim → gancho" value={t.pernasSuperiores || 2} onChange={(e) => mudar({ pernasSuperiores: Number(e.target.value) })} slotProps={leitura} sx={sxCampo}>
-                <MenuItem value={1}>1 perna</MenuItem><MenuItem value={2}>2 pernas</MenuItem>
+                <MenuItem value={2}>2 pernas</MenuItem>
               </TextField>
             )}
           </Box>

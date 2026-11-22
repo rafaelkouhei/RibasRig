@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ACESSORIOS, CLIENTES, CONFIGURACOES, GUINDASTES, PLANOS, TIPOS } from '../data/mock';
 import { HOJE } from './formatacao';
-import { artsEmUso, calcularPlano, caminhoPlano, formDoPlano, pastaDe, planoDoForm, resultadosDoCalculo, rotuloDocumento, type FormPlano } from './plano';
+import { artsEmUso, calcularPlano, caminhoPlano, formDoPlano, pastaDe, planoDoForm, resultadosDoCalculo, rotuloDocumento, TEXTO_MONTAGEM_NAO_CALCULADA, type FormPlano } from './plano';
 import type { Acessorio } from './types';
 
 const [p2607036, p2610001, p2610002] = PLANOS;
@@ -279,5 +279,17 @@ describe('limite da taxa configurável (Configurações)', () => {
     const r = calcular(form2607036(), '2607036', { limite: 70, aviso: 60 });
     expect(pos(r, 'gancho').nivel).toBe('atencao');
     expect(r.motivosBloqueio.some((m) => m.startsWith('taxa acima'))).toBe(false);
+  });
+});
+
+describe('tipo com montagem que as fórmulas não cobrem', () => {
+  it('balancim com 1 perna superior bloqueia (a tração real seria o dobro da calculada)', () => {
+    const tipos = TIPOS.map((t) => (t.id === p2607036.tipoIcamentoId ? { ...t, pernasSuperiores: 1 } : t));
+    const r = calcularPlano({
+      form: form2607036(), numero: '2607036', acessorios: ACESSORIOS, guindastes: GUINDASTES, tipos, clientes: CLIENTES,
+      configuracoes: { avisoAtencaoPct: CONFIGURACOES.avisoAtencaoPct }, hoje: HOJE, artsEmUso: artsEmUso(PLANOS.filter((p) => p.numero !== '2607036')),
+    });
+    expect(r.podeEmitir).toBe(false);
+    expect(r.motivosBloqueio).toContain(`lingada incompleta (${TEXTO_MONTAGEM_NAO_CALCULADA})`);
   });
 });

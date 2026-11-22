@@ -7,7 +7,11 @@ import {
   type CapacidadeNoGrafico, type ResultadoInspecao, type ResultadoLaudo, type ResultadoSapatas,
 } from './calculos';
 import { casasDe, dataBR, dataIsoValida, fmt, fmtPct, lerNum, numParaTexto } from './formatacao';
+import { erroMontagemDoTipo } from './regras';
 import { erroNumeroArt, validarCampo, type CampoValidado, type NomeFaixa } from './validacao';
+
+/** Motivo de bloqueio do tipo com montagem que as fórmulas não cobrem (mesmo texto de motor/plano.py). */
+export const TEXTO_MONTAGEM_NAO_CALCULADA = 'montagem do tipo de içamento (número de pernas) não é calculada pelo sistema; ajuste o tipo em Cálculos';
 import type {
   Acessorio, AnexosPlano, Cliente, Configuracoes, DadosPlano, Guindaste, ISODate, ISODateTime, PlanoRigging,
   PosicaoLingada, ResultadosRevisao, SituacaoSeguranca, TabelaCapacidade, TipoIcamento,
@@ -297,6 +301,7 @@ export function calcularPlano(e: EntradaCalculo): ResultadoPlano {
   const problemasLingada = [
     ...(f.lingada.length === 0 ? ['nenhum acessório na lingada'] : []),
     ...(tipo ? [] : ['tipo de içamento não cadastrado']),
+    ...(tipo && erroMontagemDoTipo(tipo) ? [TEXTO_MONTAGEM_NAO_CALCULADA] : []),
     ...problemasItens,
     ...porPosicao.filter((r) => r.problema).map((r) => (r.problema === 'posição não existe neste tipo de içamento' ? `${NOME_POSICAO[r.posicao]}: ${r.problema}` : r.problema!)),
   ];

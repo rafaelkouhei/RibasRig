@@ -364,8 +364,9 @@ erDiagram
     ACESSORIO ||--o{ EVENTO_ACESSORIO : histórico
 ```
 
-As regras de cálculo do engenheiro e os tipos de içamento que as aplicam (cada gravação de uma regra vira uma versão;
-os planos emitidos guardam a versão usada):
+As regras de cálculo do engenheiro e os tipos de içamento que as listam (cada gravação de uma regra vira uma versão;
+os planos emitidos guardam a versão listada). O motor calcula com fórmulas fixas (`calculos.ts` / `motor/calculos.py`);
+as regras são referência, e o tipo só influi pelo balancim e pela montagem aceita (`erroMontagemDoTipo`):
 
 ```mermaid
 erDiagram
