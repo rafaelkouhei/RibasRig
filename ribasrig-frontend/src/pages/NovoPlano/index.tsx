@@ -226,6 +226,8 @@ function Formulario() {
     const atual = planoRef.current;
     if (!atual || !r?.podeEmitir || !cad) return;
     if (emAndamento.current) { notificar('Aguarde o salvamento do rascunho terminar e emita de novo.', 'info'); return; }
+    // Com o servidor, o laudo renovado só vale com o PDF guardado (o nome sozinho não aprova o checklist lá)
+    if (MODO_API === 'http' && renovValida && !renov.pdf) { notificar('Anexe de novo o PDF do laudo renovado antes de emitir.', 'warning'); return; }
     setEmitindo(true);
     try {
       const salvoAgora = await api.salvarRascunho({ ...atual, ...planoDoForm(f, atual), etapaAtual: 6 });

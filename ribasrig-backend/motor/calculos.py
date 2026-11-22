@@ -191,9 +191,13 @@ def extensao_que_alcanca(pontos: list[Ponto], raio_m: Num) -> Ponto | None:
 
 
 def tabela_do_guindaste(g: Guindaste | None, tabela_id: str | None) -> Tabela | None:
+    """Gráfico escolhido; sem escolha, o primeiro. Escolha que não existe mais (gráfico apagado ou renomeado) = None:
+    bloqueia como 'sem gráfico' em vez de calcular com outra configuração de lança sem avisar."""
     if not g or not g.tabelas:
         return None
-    return next((t for t in g.tabelas if t.id == tabela_id), g.tabelas[0])
+    if not tabela_id:
+        return g.tabelas[0]
+    return next((t for t in g.tabelas if t.id == tabela_id), None)
 
 
 def nome_grafico(t: Tabela | None) -> str:

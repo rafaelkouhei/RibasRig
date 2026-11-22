@@ -29,7 +29,9 @@ def guindaste_json(g: Guindaste) -> dict:
         'id': g.id, 'modelo': g.modelo, 'codigo': g.codigo, 'veiculo': g.veiculo, 'placa': g.placa, 'chassi': g.chassi, 'ano': g.ano,
         'capacidade_nominal_t': n(g.capacidade_nominal_t), 'comprimento_lanca_m': n(g.comprimento_lanca_m),
         'a_m': n(g.a_m), 'b_m': n(g.b_m), 'pg_kgf': n(g.pg_kgf),
-        'laudos': [{'inicio': iso_data(l.inicio), 'fim': iso_data(l.fim), 'art': l.art, 'arquivo': l.arquivo, 'atual': l.atual} for l in g.laudos.all()],
+        # Nome do PDF só com o arquivo guardado (laudos do cenário de exemplo têm o nome, mas não o arquivo)
+        'laudos': [{'inicio': iso_data(l.inicio), 'fim': iso_data(l.fim), 'art': l.art, 'arquivo': l.arquivo if l.arquivo_ref_id else None,
+                    'atual': l.atual} for l in g.laudos.all()],
         'tabelas': [{'id': t.chave, 'nome': t.nome, 'pontos': [{'alcance_m': n(p.alcance_m), 'capacidade_kg': n(p.capacidade_kg)} for p in t.pontos.all()]}
                     for t in g.tabelas.all()],
         'dados_pendentes': g.dados_pendentes, 'ativo': g.ativo,

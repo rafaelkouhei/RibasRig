@@ -259,7 +259,10 @@ servidor faz e com que valores:
 - **PDF do plano** (`planos/documentos/pdf_plano.py`), gerado na emissão, na ordem da empresa: ficha de dados →
   desenhos → ART do plano → procedimento operacional → laudo do guindaste. Ficha e procedimento têm o mesmo
   conteúdo da visualização do front (`Documento.tsx`); os anexos entram sem alteração. Anexo ilegível impede a
-  emissão (422); anexo que não está guardado (revisões do cenário de exemplo) vira uma página de aviso. Revisões
+  emissão (422); anexo que não está guardado (revisões do cenário de exemplo) vira uma página de aviso. Numa emissão
+  nova isso não acontece: o checklist só aprova o laudo do guindaste com o PDF guardado no servidor (o nome do
+  arquivo sozinho não conta; o cadastro descarta nome sem arquivo). Os laudos do cenário de exemplo vêm sem PDF:
+  para emitir um plano novo na demonstração, anexe o PDF do laudo em Guindastes. Revisões
   emitidas antes da geração automática ganham o PDF no primeiro pedido; nelas, anexo ilegível também vira aviso,
   porque a revisão não pode mais ser corrigida.
 - **Memorial de cálculo** (`pdf_memorial.py`), também na emissão: as mesmas seções de `visualizacao/memorial.ts`.

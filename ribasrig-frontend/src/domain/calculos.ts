@@ -112,10 +112,14 @@ export function extensaoQueAlcanca(pontos: PontoGrafico[], raioM: number): Ponto
   return pts.find((p) => p.alcanceM >= raioM) ?? null;
 }
 
-/** Gráfico escolhido do guindaste (pelo id) ou, sem id/id inexistente, o primeiro. null = sem gráfico. */
+/**
+ * Gráfico escolhido do guindaste (pelo id) ou, sem id, o primeiro. null = sem gráfico. Id que não existe mais (gráfico
+ * apagado ou renomeado) também = null: bloqueia como "sem gráfico" em vez de calcular com outra configuração de lança.
+ */
 export function tabelaDoGuindaste(g: Guindaste | null | undefined, tabelaId: string | null | undefined): TabelaCapacidade | null {
   if (!g || !g.tabelas.length) return null;
-  return g.tabelas.find((t) => t.id === tabelaId) ?? g.tabelas[0];
+  if (!tabelaId) return g.tabelas[0];
+  return g.tabelas.find((t) => t.id === tabelaId) ?? null;
 }
 
 /** "Gráfico de carga · lança principal (8 extensões)" */

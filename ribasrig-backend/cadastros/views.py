@@ -212,7 +212,9 @@ def _salvar_guindaste(g: Guindaste, dados) -> Guindaste:
         setattr(g, campo, d[campo])
     g.save()
 
-    # Laudos: um único atual (o marcado; senão o último). O arquivo já enviado acompanha o laudo pelo nome.
+    # Laudos: um único atual (o marcado; senão o último). O arquivo já enviado acompanha o laudo pelo nome; um nome
+    # sem arquivo guardado não é gravado (o PDF entra só por LaudoArquivoView), para o checklist nunca aprovar um
+    # laudo que não existe.
     arquivos_por_nome = {l.arquivo: l.arquivo_ref_id for l in g.laudos.all() if l.arquivo and l.arquivo_ref_id}
     laudos = d['laudos']
     if laudos:
@@ -221,7 +223,8 @@ def _salvar_guindaste(g: Guindaste, dados) -> Guindaste:
             l['atual'] = i == marcado
     g.laudos.all().delete()
     Laudo.objects.bulk_create([
-        Laudo(guindaste=g, ordem=i, inicio=l['inicio'], fim=l['fim'], art=l['art'].strip(), arquivo=l['arquivo'] or None,
+        Laudo(guindaste=g, ordem=i, inicio=l['inicio'], fim=l['fim'], art=l['art'].strip(),
+              arquivo=l['arquivo'] if arquivos_por_nome.get(l['arquivo']) else None,
               arquivo_ref_id=arquivos_por_nome.get(l['arquivo']), atual=l['atual'])
         for i, l in enumerate(laudos)
     ])

@@ -67,7 +67,9 @@ def _guindaste_dict(g: Guindaste) -> dict:
     # Direto dos campos Decimal (sem passar pelo JSON)
     return {
         'id': g.id, 'modelo': g.modelo, 'a_m': g.a_m, 'b_m': g.b_m, 'pg_kgf': g.pg_kgf,
-        'laudos': [{'inicio': l.inicio, 'fim': l.fim, 'art': l.art, 'arquivo': l.arquivo, 'atual': l.atual} for l in g.laudos.all()],
+        # O checklist só aceita o laudo com o PDF guardado no sistema (não basta o nome)
+        'laudos': [{'inicio': l.inicio, 'fim': l.fim, 'art': l.art, 'arquivo': l.arquivo if l.arquivo_ref_id else None, 'atual': l.atual}
+                   for l in g.laudos.all()],
         'tabelas': [{'id': t.chave, 'nome': t.nome, 'pontos': [{'alcance_m': pt.alcance_m, 'capacidade_kg': pt.capacidade_kg} for pt in t.pontos.all()]}
                     for t in g.tabelas.all()],
     }

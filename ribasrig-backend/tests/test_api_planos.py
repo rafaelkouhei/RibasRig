@@ -39,8 +39,11 @@ def dados_de(c, numero: str) -> dict:
 
 
 def plano_pronto(c) -> str:
-    """Rascunho igual ao 2607036, com operação dentro da validade do laudo, ART nova e anexos enviados."""
+    """Rascunho igual ao 2607036, com operação dentro da validade do laudo, ART nova, anexos enviados e o PDF do laudo
+    do guindaste guardado (o checklist não aceita só o nome do arquivo)."""
     d = dados_de(c, '2607036')
+    r = c.post(f'/api/guindastes/{d["guindaste_id"]}/laudo/arquivo/', {'arquivo': pdf('Laudo_MD45007.pdf')}, format='multipart')
+    assert r.status_code == 200, r.json()
     d.update(data_operacao='2026-10-01', art=ART_NOVA, art_registrada_em=None)
     r = c.post('/api/planos/', d, format='json')
     assert r.status_code == 201, r.json()
@@ -131,6 +134,18 @@ class TestEmissao:
         admin.put('/api/configuracoes/', {**cfg, 'limite_pct': 70, 'aviso_atencao_pct': 55}, format='json')
         assert admin.post(f'/api/planos/{numero}/emitir/').status_code == 200
         assert Revisao.objects.get(plano__numero=numero, numero=1).entradas['limite_pct'] == '70.00'
+
+    def test_laudo_so_com_nome_nao_conta_como_anexado(self, admin):
+        # O PDF do laudo some (ou o upload falhou) e o cadastro manda só o nome: o checklist não aprova
+        numero = plano_pronto(admin)
+        from cadastros.models import Laudo
+        Laudo.objects.filter(guindaste_id=1).update(arquivo_ref=None)
+        g = next(x for x in admin.get('/api/guindastes/').json() if x['id'] == 1)
+        assert all(l['arquivo'] is None for l in g['laudos'])
+        g['laudos'] = [{**l, 'arquivo': 'Laudo_inventado.pdf'} for l in g['laudos']]
+        assert all(l['arquivo'] is None for l in admin.put('/api/guindastes/1/', g, format='json').json()['laudos'])
+        r = admin.post(f'/api/planos/{numero}/emitir/')
+        assert (r.status_code, r.json()['detail']) == (422, 'Não dá para emitir: anexos obrigatórios.')
 
     def test_guindaste_inativo_nao_emite(self, admin):
         from cadastros.models import Guindaste

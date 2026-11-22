@@ -34,22 +34,23 @@ def pdf_com_paginas(n: int) -> bytes:
 
 class TestPdfDoPlano:
     def test_emissao_gera_pdf_na_ordem_com_os_anexos(self, admin, monkeypatch):
-        # Desenhos com 3 páginas: ficha (1) + desenhos (3) + ART (1) + procedimento (1) + laudo (aviso, 1)
+        # Anexos com 3 páginas cada: ficha (1) + desenhos (3) + ART (3) + procedimento (1) + laudo (3)
         import tests.test_api_planos as T
         monkeypatch.setattr(T, 'PDF', pdf_com_paginas(3))
         numero = plano_pronto(admin)
         admin.post(f'/api/planos/{numero}/emitir/')
         assert set(DocumentoRevisao.objects.filter(revisao__plano__numero=numero).values_list('tipo', flat=True)) == {'plano', 'memorial'}
         r = admin.get(f'/api/planos/{numero}/revisoes/1/pdf/')
-        assert r['X-Paginas'] == '9' and r['Content-Disposition'].startswith('inline')
+        assert r['X-Paginas'] == '11' and r['Content-Disposition'].startswith('inline')
         leitor = pdf_de(r)
-        assert len(leitor.pages) == 9
+        assert len(leitor.pages) == 11
         t = [p.extract_text() for p in leitor.pages]
         assert f'PLANO DE RIGGING nº {numero}' in t[0]
         for valor in ('3.746,62 kg', '9,26 t', '40,46 %', '58,36 %', '68,09 %', '7.940,68 kgf', '3,18 kgf/cm²', 'Kaefer Rip', 'ART 1720269999999'):
             assert valor in t[0], valor
         assert 'Procedimento' in t[7] and 'raio de 7,0 m' in t[7]
-        assert 'Laudo técnico' in t[8] and 'não está guardado no sistema' in t[8]
+        # O laudo entra com o PDF guardado, nunca como página de aviso numa emissão nova
+        assert not any('não está guardado no sistema' in x for x in t)
         assert leitor.metadata.title == f'Plano de Rigging nº {numero} · Rev. 1'
 
     def test_baixar_como_anexo(self, admin):

@@ -146,3 +146,11 @@ def test_montagem_do_tipo_igual_ao_front():
     assert erro_montagem_do_tipo(False, 2, 0) is None
     assert erro_montagem_do_tipo(False, 4, 0) is None
     assert erro_montagem_do_tipo(False, 1, 0) == MSG_MONTAGEM_SEM_BALANCIM
+
+
+def test_tabela_do_guindaste_igual_ao_front():
+    from motor.calculos import tabela_do_guindaste
+    g = C.guindaste(X.GUINDASTES[0])
+    assert tabela_do_guindaste(g, None) is g.tabelas[0]
+    assert tabela_do_guindaste(g, g.tabelas[0].id) is g.tabelas[0]
+    assert tabela_do_guindaste(g, 'apagado') is None  # bloqueia; não troca de lança sem avisar

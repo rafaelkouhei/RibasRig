@@ -266,7 +266,10 @@ emitido guarda a cópia do que usou.
 
 - Dados do guindaste e do caminhão; **a**, **b** e **Pg** (usados no cálculo das sapatas).
 - **Laudo técnico:** validade (início e fim), ART do laudo e o **PDF do laudo**. **+ Registrar novo laudo** manda o
-  atual para o histórico ao salvar.
+  atual para o histórico ao salvar. Sem o PDF guardado, o laudo conta como **faltando** no checklist do plano e a
+  emissão fica bloqueada; se o envio do PDF falhar, anexe de novo e salve.
+- **Gráfico escolhido no plano:** se o gráfico for apagado ou trocado de nome, os planos que o usavam ficam
+  bloqueados com "sem gráfico de carga" até alguém escolher o gráfico de novo na etapa Guindaste.
 - **Gráfico de carga:** para cada configuração da lança, a tabela alcance (m) × capacidade (kg), copiada do manual do
   fabricante. O gráfico é desenhado na hora; linha repetida ou inválida fica marcada.
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   LIMITE_PADRAO_PCT, LIMITE_PCT, capacidadeKg, capacidadeNoGrafico, definirLimite, esforcoSapatas, extensaoQueAlcanca, nivelTaxa, nomeGrafico, situacaoInspecao, situacaoLaudo,
-  taxaPct, tracoesPorPosicao,
+  tabelaDoGuindaste, taxaPct, tracoesPorPosicao,
 } from './calculos';
 import { ACESSORIOS, GUINDASTES } from '../data/mock';
 import { HOJE } from './formatacao';
@@ -170,5 +170,16 @@ describe('limite configurável', () => {
     expect(LIMITE_PCT).toBe(90);
     definirLimite(LIMITE_PADRAO_PCT);
     expect(nivelTaxa(88)).toBe('bloqueado');
+  });
+});
+
+describe('tabelaDoGuindaste (igual a motor/calculos.py)', () => {
+  const g = GUINDASTES[0];
+  it('sem escolha usa o primeiro gráfico; escolha existente usa ela', () => {
+    expect(tabelaDoGuindaste(g, null)).toBe(g.tabelas[0]);
+    expect(tabelaDoGuindaste(g, g.tabelas[0].id)).toBe(g.tabelas[0]);
+  });
+  it('gráfico escolhido que não existe mais = null (bloqueia; não troca de lança sem avisar)', () => {
+    expect(tabelaDoGuindaste(g, 'apagado')).toBeNull();
   });
 });

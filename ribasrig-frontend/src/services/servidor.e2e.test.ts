@@ -72,6 +72,8 @@ describe.skipIf(!URL_SERVIDOR)('ponta a ponta com o servidor Django', () => {
     const pdf = (nome: string) => new File([pdfMinimo()], nome, { type: 'application/pdf' });
     await api.enviarAnexoPlano(rascunho.numero, 'desenhos', pdf(`Desenhos_${rascunho.numero}.pdf`));
     const comAnexos = await api.enviarAnexoPlano(rascunho.numero, 'art', pdf(`ART_${art}.pdf`));
+    // O checklist só aceita o laudo do guindaste com o PDF guardado no servidor (o nome sozinho não basta)
+    await api.enviarLaudoGuindaste(modelo.guindasteId!, pdf('Laudo_MD45007.pdf'));
     const naTela = await calcularNoFront(comAnexos);
     expect(naTela.podeEmitir).toBe(true);
     const emitido = await api.emitirPlano(rascunho.numero);
