@@ -16,7 +16,8 @@ export function lerConfiguracao(pastaDados: string, pastaApp: string, empacotado
   let arquivo: Partial<Configuracao> = {};
   const caminho = path.join(pastaDados, 'configuracao.json');
   if (existsSync(caminho)) {
-    try { arquivo = JSON.parse(readFileSync(caminho, 'utf-8')) as Partial<Configuracao>; } catch { /* arquivo inválido: usa o padrão */ }
+    // Sem o BOM: o Bloco de Notas e o PowerShell 5 gravam "UTF-8" com BOM, e o JSON.parse recusaria o arquivo
+    try { arquivo = JSON.parse(readFileSync(caminho, 'utf-8').replace(/^﻿/, '')) as Partial<Configuracao>; } catch { /* arquivo inválido: usa o padrão */ }
   }
   // Em desenvolvimento o back-end está ao lado (../ribasrig-backend)
   const vizinho = path.resolve(pastaApp, '..', 'ribasrig-backend');

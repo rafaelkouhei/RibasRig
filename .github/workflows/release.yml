@@ -1,0 +1,84 @@
+name: Instalador do Windows
+# Gera o instalador do aplicativo num Windows do GitHub e o publica numa Release.
+#   Publicar uma versão:  git tag v1.0.0 && git push origin v1.0.0   (a tag tem de ser igual à "version" de
+#                         ribasrig-desktop/package.json, com um "v" na frente)
+#   Só testar o build:    aba Actions › "Instalador do Windows" › Run workflow (o .exe fica nos Artifacts da execução)
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            ribasrig-frontend/package-lock.json
+            ribasrig-desktop/package-lock.json
+
+      - name: Versão do pacote
+        id: versao
+        run: |
+          VERSAO=$(node -p "require('./ribasrig-desktop/package.json').version")
+          echo "versao=$VERSAO" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$VERSAO" ]; then
+            echo "::error::A tag $GITHUB_REF_NAME não bate com a versão $VERSAO de ribasrig-desktop/package.json (esperado v$VERSAO)."
+            exit 1
+          fi
+
+      - run: npm ci
+        working-directory: ribasrig-frontend
+      - name: Front-end — tipos e testes
+        run: npm run typecheck && npm test
+        working-directory: ribasrig-frontend
+      - run: npm ci
+        working-directory: ribasrig-desktop
+      - name: Aplicativo — testes
+        run: npm test
+        working-directory: ribasrig-desktop
+      - name: Instalador (electron-builder, NSIS x64)
+        run: npm run dist:win -- --publish never
+        working-directory: ribasrig-desktop
+
+      # Nome sem espaços (o GitHub troca espaços por pontos nos anexos) e o SHA-256 para conferir o download
+      - name: Preparar arquivos
+        id: arquivos
+        run: |
+          EXE="RibasRig-Setup-${{ steps.versao.outputs.versao }}.exe"
+          mv "ribasrig-desktop/release/RibasRig Setup ${{ steps.versao.outputs.versao }}.exe" "$EXE"
+          sha256sum "$EXE" > "$EXE.sha256"
+          echo "exe=$EXE" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RibasRig-Setup-${{ steps.versao.outputs.versao }}
+          path: |
+            ${{ steps.arquivos.outputs.exe }}
+            ${{ steps.arquivos.outputs.exe }}.sha256
+
+      - name: Publicar a Release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXE: ${{ steps.arquivos.outputs.exe }}
+        run: |
+          NOTAS="Instalador do aplicativo RibasRig para Windows 10/11 (64 bits).
+
+          O aplicativo precisa do servidor (Docker) ligado no mesmo computador: siga o passo a passo do README,
+          seção \"Avaliação no Windows (passo a passo do zero)\", a partir do passo do servidor.
+
+          O instalador não tem assinatura de código: o Windows SmartScreen pede confirmação
+          (Mais informações › Executar assim mesmo). Para conferir o arquivo, compare o SHA-256 com o .sha256 anexo."
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --title "RibasRig $GITHUB_REF_NAME" --notes "$NOTAS"
+          fi
+          gh release upload "$GITHUB_REF_NAME" "$EXE" "$EXE.sha256" --clobber

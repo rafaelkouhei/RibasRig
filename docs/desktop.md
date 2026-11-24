@@ -71,6 +71,7 @@ npm start              # compila src/ e abre o aplicativo (back-end em http://12
 npm test               # testes das regras de caminho e do protocolo (node:test)
 npm run fumaca         # teste de fumaça: abre o sistema escondido, confere ponte, isolamento e proxy, e fecha
 npm run dist:win       # instalador do Windows em release/ (funciona também a partir do macOS)
+                       # Release no GitHub: tag v<versão> (workflow release.yml, num Windows; ver o README)
 npm run app:mac        # RibasRig.app (sem instalador, sem assinatura) em release/mac-arm64, para testar no Mac
 ```
 
@@ -104,7 +105,7 @@ src/preload.ts     window.ribasrig (espelha PonteDesktop em ribasrig-frontend/sr
 src/protocolo.ts   arquivos do pacote com CSP e repasse de /api para o Django
 src/arquivos.ts    regras de onde e o que gravar
 src/servidor.ts    confere/sobe o servidor e a página de servidor desligado
-src/config.ts      configuracao.json e variáveis de ambiente
+src/config.ts      configuracao.json (aceita BOM) e variáveis de ambiente
 scripts/construir-front.mjs   build do front com VITE_API=http (também no Windows)
 build/icon.png     ícone do aplicativo (o electron-builder gera o .ico e o .icns a partir dele)
 ```
